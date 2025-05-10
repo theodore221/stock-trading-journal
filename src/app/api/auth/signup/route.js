@@ -16,6 +16,14 @@ export async function POST(request) {
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
+
+  const { data: newUser, error: dbError } = await supabaseAdmin
+    .from("users")
+    .insert([{ id: user.id, email }]);
+
+  if (dbError) {
+    return NextResponse.json({ error: dbError.message }, { status: 500 });
+  }
+
   return NextResponse.json({ message: "User created", user }, { status: 201 });
 }
-2;

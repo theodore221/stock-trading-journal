@@ -1,6 +1,12 @@
-export async function POST(request) {
-  // In a stateless JWT approach, simply instruct the client to remove the token.
-  return new Response(JSON.stringify({ message: "Logout successful" }), {
-    status: 200,
-  });
+import { NextResponse } from "next/server";
+
+export async function POST() {
+  const response = NextResponse.json(
+    { message: "Logged out successfully" },
+    { status: 200 }
+  );
+
+  response.cookies.delete("token");
+
+  return response;
 }
