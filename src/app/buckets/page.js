@@ -7,65 +7,37 @@ import BucketGrid from "@/components/buckets/BucketGrid";
 import CreateBucketModal from "@/components/buckets/CreateBucketModal";
 import BucketDetailModal from "@/components/buckets/BucketDetailModal";
 // import { useStore } from "../../store";
+import { useBucketStore } from "@/store/useBucketStore";
 
 export default function Buckets() {
-  const [buckets, setBuckets] = useState([]);
+  const buckets = useBucketStore((s) => s.buckets);
+  const fetchBuckets = useBucketStore((s) => s.fetchBuckets);
+  const createBucket = useBucketStore((s) => s.createBucket);
+  const deleteBucket = useBucketStore((s) => s.deleteBucket);
+
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedBucket, setSelectedBucket] = useState(null);
 
-  const [name, setName] = useState("");
-
-  const fetchBuckets = async () => {
-    try {
-      const res = await axios.get("/api/buckets", {
-        withCredentials: true,
-      });
-      setBuckets(res.data);
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  // const fetchBuckets = async () => {
+  //   try {
+  //     const res = await axios.get("/api/buckets", {
+  //       withCredentials: true,
+  //     });
+  //     setBuckets(res.data);
+  //   } catch (err) {
+  //     console.error(err);
+  //   }
+  // };
 
   useEffect(() => {
     fetchBuckets();
-  }, []);
+  }, [fetchBuckets]);
 
-  // //TODO:Might be Outdated
-  // const handleCreateBucket = async (e) => {
-  //   e.preventDefault();
-  //   try {
-  //     await axios.post("/api/buckets", { name }, { withCredentials: true });
-  //     setName("");
-  //     fetchBuckets();
-  //   } catch (err) {
-  //     console.error(err);
-  //   }
-  // };
-
-  // const handleDelete = async (id) => {
-  //   try {
-  //     await axios.delete(`/api/buckets/${id}`, {
-  //       withCredentials: true,
-  //     });
-  //     fetchBuckets();
-  //   } catch (err) {
-  //     console.error(err);
-  //   }
-  // };
-
-  const handleCreate = async (name) => {
-    try {
-      await axios.post("/api/buckets", { name }, { withCredentials: true });
-      setShowCreateModal(false);
-      fetchBuckets();
-    } catch (err) {
-      console.error(err);
-    }
+  const handleCreate = (name) => {
+    console.log(buckets);
+    createBucket(name);
+    setShowCreateModal(false);
   };
-
-  function handleCardClick(bucket) {
-    setSelectedBucket(bucket);
-  }
 
   return (
     <div className="container mx-auto p-4">
@@ -79,6 +51,7 @@ export default function Buckets() {
         buckets={buckets}
         onAddClick={() => setShowCreateModal(true)}
         onBucketClick={setSelectedBucket}
+        onDelete={deleteBucket}
       />
 
       {showCreateModal && (

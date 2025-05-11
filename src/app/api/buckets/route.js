@@ -32,6 +32,7 @@ export async function POST(request) {
     const { data, error } = await supabaseAdmin
       .from("buckets")
       .insert([{ user_id: user.id, name }])
+      .select()
       .single();
 
     if (error)
