@@ -19,6 +19,44 @@ import {
 export default function BucketDetailsPage() {
   const { id } = useParams();
   const router = useRouter();
+  const [budget, setBudget] = useState(0);
+  const [available, setAvailable] = useState(0);
+  const [locked, setLocked] = useState(0);
+  const [wins, setWins] = useState(0);
+  const [losses, setLosses] = useState(0);
+  const [openTrades, setOpenTrades] = useState(0);
+  const [closedTrades, setClosedTrades] = useState(0);
+  const [avgWin, setAvgWin] = useState(0);
+  const [avgLoss, setAvgLoss] = useState(0);
+  const [pnl, setPnl] = useState(0);
+  const [trades, setTrades] = useState([]);
+
+  useEffect(() => {
+    const fetchBucket = async () => {
+      try {
+        const res = await axios.get(`/api/buckets/${id}`, {
+          withCredentials: true,
+        });
+        const data = res.data;
+        setBudget(data.budget || 0);
+        setTrades(data.trades || []);
+        // simple metrics based on trades
+        setOpenTrades((data.trades || []).length);
+        setClosedTrades(0);
+        setAvailable(data.budget || 0);
+        setLocked(0);
+        setWins(0);
+        setLosses(0);
+        setAvgWin(0);
+        setAvgLoss(0);
+        setPnl(0);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchBucket();
+  }, [id]);
 
   return (
     <div className="container mx-auto p-4 space-y-6">
@@ -40,8 +78,16 @@ export default function BucketDetailsPage() {
           className="w-32"
         />
         <Button
-          onClick={() => {
-            /* TODO: POST /api/buckets/${id} to save budget */
+          onClick={async () => {
+            try {
+              await axios.post(
+                `/api/buckets/${id}`,
+                { budget },
+                { withCredentials: true }
+              );
+            } catch (err) {
+              console.error(err);
+            }
           }}
         >
           Set Budget
