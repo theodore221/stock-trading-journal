@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import axios from "axios";
 import Link from "next/link";
 import BucketGrid from "@/components/buckets/BucketGrid";
@@ -10,6 +11,7 @@ import BucketDetailModal from "@/components/buckets/BucketDetailModal";
 import { useBucketStore } from "@/store/useBucketStore";
 
 export default function Buckets() {
+  const router = useRouter();
   const buckets = useBucketStore((s) => s.buckets);
   const fetchBuckets = useBucketStore((s) => s.fetchBuckets);
   const createBucket = useBucketStore((s) => s.createBucket);
@@ -41,16 +43,12 @@ export default function Buckets() {
 
   return (
     <div className="container mx-auto p-4">
-      <nav className="mb-4">
-        <Link href="/">Dashboard</Link> | <Link href="/trades">Trades</Link> |{" "}
-        <Link href="/buckets">Buckets</Link> | <Link href="/chart">Charts</Link>
-      </nav>
       <h1 className="text-3xl mb-4">Strategy Buckets</h1>
 
       <BucketGrid
         buckets={buckets}
         onAddClick={() => setShowCreateModal(true)}
-        onBucketClick={setSelectedBucket}
+        onBucketClick={(bucket) => router.push(`/buckets/${bucket.id}`)}
         onDelete={deleteBucket}
       />
 
