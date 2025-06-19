@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 export async function GET(request, { params }) {
   try {
     const user = await verifyUserFromCookie(request);
-    const bucketId = params.id;
+    const { id: bucketId } = await params;
 
     const { data: bucket, error: bucketErr } = await supabaseAdmin
       .from("buckets")
@@ -20,7 +20,7 @@ export async function GET(request, { params }) {
     const { data: trades, error: tradesErr } = await supabaseAdmin
       .from("trades")
       .select(
-        "id, stock, type, quantity, price, date, notes, created_at, bucket_id"
+        "id, stock, action_type, quantity, price, date, notes, created_at, bucket_id, status"
       )
       .eq("bucket_id", bucketId)
       .eq("user_id", user.id)

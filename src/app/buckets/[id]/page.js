@@ -15,6 +15,7 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table";
+import AddTradeForm from "@/components/trades/AddTradeForm";
 
 export default function BucketDetailsPage() {
   const { id } = useParams();
@@ -30,6 +31,8 @@ export default function BucketDetailsPage() {
   const [avgLoss, setAvgLoss] = useState(0);
   const [pnl, setPnl] = useState(0);
   const [trades, setTrades] = useState([]);
+  const [bucketName, setBucketName] = useState("");
+  const [showTradeForm, setShowTradeForm] = useState(false);
 
   useEffect(() => {
     const fetchBucket = async () => {
@@ -38,6 +41,9 @@ export default function BucketDetailsPage() {
           withCredentials: true,
         });
         const data = res.data;
+        console.log("printing response data)");
+        console.log(data);
+        setBucketName(data.name);
         setBudget(data.budget || 0);
         setTrades(data.trades || []);
         // simple metrics based on trades
@@ -58,6 +64,12 @@ export default function BucketDetailsPage() {
     fetchBucket();
   }, [id]);
 
+  const handleCreate = (name) => {
+    console.log("tradeform added");
+    // createBucket(name);
+    // setShowCreateModal(false);
+  };
+
   return (
     <div className="container mx-auto p-4 space-y-6">
       {/* Header */}
@@ -65,7 +77,7 @@ export default function BucketDetailsPage() {
         <Button variant="ghost" onClick={() => router.back()}>
           ← Back
         </Button>
-        <h1 className="text-3xl font-bold">Bucket: {id}</h1>
+        <h1 className="text-3xl font-bold">Bucket: {bucketName}</h1>
       </div>
 
       {/* Budget setter */}
@@ -168,14 +180,17 @@ export default function BucketDetailsPage() {
 
       {/* Add Trade button */}
       <div className="flex justify-end">
-        <Button
-          onClick={() => {
-            /* TODO: open Add Trade modal */
-          }}
-        >
-          + Add Trade
-        </Button>
+        <Button onClick={() => setShowTradeForm(true)}>+ Add Trade</Button>
       </div>
+
+      {showTradeForm && (
+        <AddTradeForm
+          onClose={() => {
+            setShowTradeForm(false);
+          }}
+          onCreate={handleCreate}
+        />
+      )}
 
       {/* Trades table */}
       <div className="overflow-auto">
