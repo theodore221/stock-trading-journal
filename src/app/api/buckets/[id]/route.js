@@ -22,7 +22,7 @@ export async function GET(request, { params }) {
       .select("id, market, target, stop_loss, notes, created_at, bucket_id")
       .eq("bucket_id", bucketId)
       .eq("user_id", user.id)
-      .order("date", { ascending: true });
+      .order("created_at", { ascending: true });
     if (tradesErr) {
       return NextResponse.json({ error: tradesErr.message }, { status: 500 });
     }
