@@ -41,12 +41,10 @@ export default function BucketDetailsPage() {
           withCredentials: true,
         });
         const data = res.data;
-        console.log("printing response data)");
+        console.log("printing response data");
         console.log(data);
         setBucketName(data.name);
         setBudget(data.budget || 0);
-        setTrades(data.trades || []);
-        // simple metrics based on trades
         setOpenTrades((data.trades || []).length);
         setClosedTrades(0);
         setAvailable(data.budget || 0);
@@ -61,7 +59,19 @@ export default function BucketDetailsPage() {
       }
     };
 
+    const fetchTrades = async () => {
+      try {
+        const res = await axios.get(`/api/buckets/${id}/trades`, {
+          withCredentials: true,
+        });
+        setTrades(res.data || []);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
     fetchBucket();
+    fetchTrades();
   }, [id]);
 
   const handleCreate = (name) => {
@@ -205,15 +215,17 @@ export default function BucketDetailsPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {trades.map((t) => (
-              <TableRow key={t.id}>
-                <TableCell>{t.date}</TableCell>
-                <TableCell>{t.stock}</TableCell>
-                <TableCell>{t.quantity}</TableCell>
-                <TableCell>${t.price}</TableCell>
-                <TableCell>{t.type}</TableCell>
-              </TableRow>
-            ))}
+            {trades.flatMap((t) =>
+              (t.trade_entries || []).map((e) => (
+                <TableRow key={e.id}>
+                  <TableCell>{e.date_time}</TableCell>
+                  <TableCell>{t.stock}</TableCell>
+                  <TableCell>{e.quantity}</TableCell>
+                  <TableCell>${e.price}</TableCell>
+                  <TableCell>{e.action}</TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>
