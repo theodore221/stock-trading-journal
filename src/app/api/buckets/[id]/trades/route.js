@@ -9,7 +9,7 @@ export async function GET(request, { params }) {
   const { data, error } = await supabaseAdmin
     .from("trades")
     .select(
-      "id, stock, notes, created_at, status, profit_loss, market, target, stop_loss, trade_entries(id, action, ts, quantity, price, fee, notes)"
+      "id, stock, notes, created_at, status, profit_loss, market, target, stop_loss, trade_entries(id, action, date_time, quantity, price)"
     )
     .eq("bucket_id", bucketId)
     .eq("user_id", user.id)
@@ -24,7 +24,8 @@ export async function GET(request, { params }) {
 export async function POST(request, { params }) {
   const { id: bucketId } = params;
   const user = await verifyUserFromCookie(request);
-  const { stock, notes, market, target, stop_loss, entries } = await request.json();
+  const { stock, notes, market, target, stop_loss, entries } =
+    await request.json();
 
   const { data: trade, error } = await supabaseAdmin
     .from("trades")
@@ -53,7 +54,10 @@ export async function POST(request, { params }) {
       .insert(entriesData);
 
     if (entriesError) {
-      return NextResponse.json({ error: entriesError.message }, { status: 500 });
+      return NextResponse.json(
+        { error: entriesError.message },
+        { status: 500 }
+      );
     }
   }
 
