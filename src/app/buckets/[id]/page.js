@@ -34,40 +34,38 @@ export default function BucketDetailsPage() {
   const [bucketName, setBucketName] = useState("");
   const [showTradeForm, setShowTradeForm] = useState(false);
 
-  useEffect(() => {
-    const fetchBucket = async () => {
-      try {
-        const res = await axios.get(`/api/buckets/${id}`, {
-          withCredentials: true,
-        });
-        const data = res.data;
-        console.log("printing response data)");
-        console.log(data);
-        setBucketName(data.name);
-        setBudget(data.budget || 0);
-        setTrades(data.trades || []);
-        // simple metrics based on trades
-        setOpenTrades((data.trades || []).length);
-        setClosedTrades(0);
-        setAvailable(data.budget || 0);
-        setLocked(0);
-        setWins(0);
-        setLosses(0);
-        setAvgWin(0);
-        setAvgLoss(0);
-        setPnl(0);
-      } catch (err) {
-        console.error(err);
-      }
-    };
+  const fetchBucket = async () => {
+    try {
+      const res = await axios.get(`/api/buckets/${id}`, {
+        withCredentials: true,
+      });
+      const data = res.data;
+      console.log("printing response data)");
+      console.log(data);
+      setBucketName(data.name);
+      setBudget(data.budget || 0);
+      setTrades(data.trades || []);
+      // simple metrics based on trades
+      setOpenTrades((data.trades || []).length);
+      setClosedTrades(0);
+      setAvailable(data.budget || 0);
+      setLocked(0);
+      setWins(0);
+      setLosses(0);
+      setAvgWin(0);
+      setAvgLoss(0);
+      setPnl(0);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
+  useEffect(() => {
     fetchBucket();
   }, [id]);
 
-  const handleCreate = (name) => {
-    console.log("tradeform added");
-    // createBucket(name);
-    // setShowCreateModal(false);
+  const handleCreate = () => {
+    fetchBucket();
   };
 
   return (
@@ -185,6 +183,7 @@ export default function BucketDetailsPage() {
 
       {showTradeForm && (
         <AddTradeForm
+          bucketId={id}
           onClose={() => {
             setShowTradeForm(false);
           }}

@@ -29,8 +29,9 @@ import {
   SliderThumb,
 } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
+import axios from "axios";
 
-const AddTradeForm = ({ onClose, onCreate }) => {
+const AddTradeForm = ({ bucketId, onClose, onCreate }) => {
   const [lines, setLines] = useState([
     {
       action: "BUY",
@@ -41,6 +42,10 @@ const AddTradeForm = ({ onClose, onCreate }) => {
     },
   ]);
 
+  const [market, setMarket] = useState("");
+  const [symbol, setSymbol] = useState("");
+  const [target, setTarget] = useState("");
+  const [stopLoss, setStopLoss] = useState("");
   const [tags, setTags] = useState([]);
   const [notes, setNotes] = useState("");
   const [confidence, setConfidence] = useState(0);
@@ -68,10 +73,31 @@ const AddTradeForm = ({ onClose, onCreate }) => {
     setLines(updated);
   };
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
-    // TODO: handle save logic (e.g. send to API)
-    console.log({ lines, tags, notes, confidence });
+    try {
+      await axios.post(
+        `/api/buckets/${bucketId}/trades`,
+        {
+          stock: symbol,
+          notes,
+          market,
+          target,
+          stop_loss: stopLoss,
+          entries: lines.map((l) => ({
+            action: l.action,
+            date_time: l.datetime,
+            quantity: l.quantity,
+            price: l.price,
+          })),
+        },
+        { withCredentials: true }
+      );
+      onCreate && onCreate();
+      onClose();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
@@ -95,7 +121,7 @@ const AddTradeForm = ({ onClose, onCreate }) => {
               <div className="grid grid-cols-4 gap-4">
                 <div>
                   <Label htmlFor="market">Market</Label>
-                  <Select>
+                  <Select value={market} onValueChange={setMarket}>
                     <SelectTrigger id="market">
                       <SelectValue placeholder="Select market" />
                     </SelectTrigger>
@@ -108,22 +134,44 @@ const AddTradeForm = ({ onClose, onCreate }) => {
                 </div>
                 <div>
                   <Label htmlFor="symbol">Symbol</Label>
-                  <Input id="symbol" placeholder="e.g. SOXL" />
+                  <Input
+                    id="symbol"
+                    placeholder="e.g. SOXL"
+                    value={symbol}
+                    onChange={(e) => setSymbol(e.target.value)}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="target">Target</Label>
-                  <Input id="target" type="number" step="0.01" />
+                  <Input
+                    id="target"
+                    type="number"
+                    step="0.01"
+                    value={target}
+                    onChange={(e) => setTarget(e.target.value)}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="stopLoss">Stop-Loss</Label>
-                  <Input id="stopLoss" type="number" step="0.01" />
+                  <Input
+                    id="stopLoss"
+                    type="number"
+                    step="0.01"
+                    value={stopLoss}
+                    onChange={(e) => setStopLoss(e.target.value)}
+                  />
                 </div>
               </div>
 
               {/* Dynamic Trade Lines */}
               <div className="space-y-2 mt-6">
                 {lines.map((line, idx) => (
-                  <div key={idx} className="flex items-center space-x-2">
+                  <div
+                    key={idx}
+                    className={`flex items-center space-x-2 p-2 rounded ${
+                      line.action === "BUY" ? "bg-green-50" : "bg-red-50"
+                    }`}
+                  >
                     <Button
                       variant="destructive"
                       size="icon"
