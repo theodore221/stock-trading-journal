@@ -27,7 +27,7 @@ export async function POST(request, { params }) {
   const { stock, notes, market, target, stop_loss, entries } =
     await request.json();
 
-  const { data: trade: trade, error } = await supabaseAdmin
+  const { data: trade, error } = await supabaseAdmin
     .from("trades")
     .insert([
       {
@@ -43,7 +43,6 @@ export async function POST(request, { params }) {
         stop_loss,
       },
     ])
-    .select()
     .select()
     .single();
 
