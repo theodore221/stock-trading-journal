@@ -19,9 +19,7 @@ export async function GET(request, { params }) {
 
     const { data: trades, error: tradesErr } = await supabaseAdmin
       .from("trades")
-      .select(
-        "id, stock, action_type, quantity, price, date, notes, created_at, bucket_id, status"
-      )
+      .select("id, market, target, stop_loss, notes, created_at, bucket_id")
       .eq("bucket_id", bucketId)
       .eq("user_id", user.id)
       .order("date", { ascending: true });
