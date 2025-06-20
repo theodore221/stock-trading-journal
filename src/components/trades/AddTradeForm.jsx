@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 
-const AddTradeForm = (onClose, onCreate) => {
+const AddTradeForm = ({ onClose, onCreate }) => {
   const [lines, setLines] = useState([
     {
       action: "BUY",
@@ -76,7 +76,7 @@ const AddTradeForm = (onClose, onCreate) => {
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-4xl">
         <DialogHeader>
           <DialogTitle>New Trade</DialogTitle>
           <DialogDescription>
@@ -121,7 +121,7 @@ const AddTradeForm = (onClose, onCreate) => {
               </div>
 
               {/* Dynamic Trade Lines */}
-              <div className="space-y-2">
+              <div className="space-y-2 mt-6">
                 {lines.map((line, idx) => (
                   <div key={idx} className="flex items-center space-x-2">
                     <Button
@@ -260,7 +260,7 @@ const AddTradeForm = (onClose, onCreate) => {
           </Tabs>
 
           {/* Save Button */}
-          <div className="text-right">
+          <div className="text-right mt-4">
             <Button type="submit">Save</Button>
           </div>
         </form>
