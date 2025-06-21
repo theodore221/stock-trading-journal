@@ -38,14 +38,16 @@ const AddTradeForm = ({ bucketId, onClose, onCreate }) => {
       datetime: new Date().toISOString().slice(0, 16),
       quantity: 0,
       price: 0,
-      fee: 0,
     },
   ]);
 
+  // General meta-fields
   const [market, setMarket] = useState("");
   const [symbol, setSymbol] = useState("");
   const [target, setTarget] = useState("");
   const [stopLoss, setStopLoss] = useState("");
+
+  // Journal fields
   const [tags, setTags] = useState([]);
   const [notes, setNotes] = useState("");
   const [confidence, setConfidence] = useState(0);
@@ -80,7 +82,6 @@ const AddTradeForm = ({ bucketId, onClose, onCreate }) => {
         `/api/buckets/${bucketId}/trades`,
         {
           stock: symbol,
-          notes,
           market,
           target,
           stop_loss: stopLoss,
@@ -90,10 +91,14 @@ const AddTradeForm = ({ bucketId, onClose, onCreate }) => {
             quantity: l.quantity,
             price: l.price,
           })),
+          // journal fields you can pick up later on server if needed
+          notes,
+          tags,
+          confidence,
         },
         { withCredentials: true }
       );
-      onCreate && onCreate();
+      onCreate?.();
       onClose();
     } catch (err) {
       console.error(err);
@@ -109,6 +114,7 @@ const AddTradeForm = ({ bucketId, onClose, onCreate }) => {
             Enter descriptions of your trade
           </DialogDescription>
         </DialogHeader>
+
         <form onSubmit={onSubmit} className="space-y-6">
           <Tabs defaultValue="general">
             <TabsList>
@@ -116,8 +122,9 @@ const AddTradeForm = ({ bucketId, onClose, onCreate }) => {
               <TabsTrigger value="journal">Journal</TabsTrigger>
             </TabsList>
 
+            {/* ─── GENERAL TAB ─── */}
             <TabsContent value="general" className="space-y-4">
-              {/* Market / Symbol / Target / Stop-Loss Fields */}
+              {/* Market / Symbol / Target / Stop-Loss */}
               <div className="grid grid-cols-4 gap-4">
                 <div>
                   <Label htmlFor="market">Market</Label>
@@ -128,7 +135,7 @@ const AddTradeForm = ({ bucketId, onClose, onCreate }) => {
                     <SelectContent>
                       <SelectItem value="INDEX">INDEX</SelectItem>
                       <SelectItem value="EQUITY">EQUITY</SelectItem>
-                      {/* ...more... */}
+                      {/* ...more */}
                     </SelectContent>
                   </Select>
                 </div>
@@ -163,12 +170,21 @@ const AddTradeForm = ({ bucketId, onClose, onCreate }) => {
                 </div>
               </div>
 
-              {/* Dynamic Trade Lines */}
+              {/* Trade Lines with Header */}
               <div className="space-y-2 mt-6">
+                {/* Header Row */}
+                <div className="flex items-center space-x-2 px-2 text-sm font-medium text-muted-foreground">
+                  <div className="w-10" /> {/* for the remove-button space */}
+                  <div className="w-16">Action</div>
+                  <div className="w-[200px]">Date/Time</div>
+                  <div className="w-24 text-right">Quantity</div>
+                  <div className="w-24 text-right">Price</div>
+                </div>
+
                 {lines.map((line, idx) => (
                   <div
                     key={idx}
-                    className={`flex items-center space-x-2 p-2 rounded ${
+                    className={`flex items-center space-x-2 px-2 py-1 rounded ${
                       line.action === "BUY" ? "bg-green-50" : "bg-red-50"
                     }`}
                   >
@@ -217,7 +233,7 @@ const AddTradeForm = ({ bucketId, onClose, onCreate }) => {
                       onChange={(e) =>
                         updateLine(idx, "quantity", Number(e.target.value))
                       }
-                      className="w-24"
+                      className="w-24 text-right"
                     />
                     <Input
                       type="number"
@@ -226,29 +242,25 @@ const AddTradeForm = ({ bucketId, onClose, onCreate }) => {
                       onChange={(e) =>
                         updateLine(idx, "price", Number(e.target.value))
                       }
-                      className="w-24"
-                    />
-                    <Input
-                      type="number"
-                      value={line.fee}
-                      placeholder="Fee"
-                      onChange={(e) =>
-                        updateLine(idx, "fee", Number(e.target.value))
-                      }
-                      className="w-24"
+                      className="w-24 text-right"
                     />
                   </div>
                 ))}
-                <Button
-                  variant="outline"
-                  onClick={addLine}
-                  className="w-8 h-8 p-0"
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
+
+                {/* Centered Add-Line Button */}
+                <div className="flex justify-center mt-2">
+                  <Button
+                    variant="outline"
+                    onClick={addLine}
+                    className="w-8 h-8 p-0"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </TabsContent>
 
+            {/* ─── JOURNAL TAB ─── */}
             <TabsContent value="journal" className="space-y-4">
               {/* Tags */}
               <div>
@@ -264,7 +276,7 @@ const AddTradeForm = ({ bucketId, onClose, onCreate }) => {
                   <SelectContent>
                     <SelectItem value="research">Research</SelectItem>
                     <SelectItem value="entry">Entry</SelectItem>
-                    {/* ...more... */}
+                    {/* ...more */}
                   </SelectContent>
                 </Select>
               </div>
@@ -307,7 +319,6 @@ const AddTradeForm = ({ bucketId, onClose, onCreate }) => {
             </TabsContent>
           </Tabs>
 
-          {/* Save Button */}
           <div className="text-right mt-4">
             <Button type="submit">Save</Button>
           </div>
