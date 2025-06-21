@@ -3,7 +3,7 @@ import { verifyUserFromCookie } from "@/lib/authMiddleware";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export async function GET(request, { params }) {
-  const { id: bucketId } = params;
+  const { id: bucketId } = await params;
   const user = await verifyUserFromCookie(request);
 
   const { data, error } = await supabaseAdmin
@@ -22,7 +22,7 @@ export async function GET(request, { params }) {
 }
 
 export async function POST(request, { params }) {
-  const { id: bucketId } = params;
+  const { id: bucketId } = await params;
   const user = await verifyUserFromCookie(request);
   const { stock, notes, market, target, stop_loss, entries } =
     await request.json();
