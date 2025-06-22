@@ -133,7 +133,9 @@ const AddTradeForm = ({ bucketId, onClose, onCreate }) => {
                       <SelectValue placeholder="Select market" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="INDEX">INDEX</SelectItem>
+                      <SelectItem value="ETF">ETF</SelectItem>
+                      <SelectItem value="FOREX">FOREX</SelectItem>
+                      <SelectItem value="DERIVATIVE">DERIVATIVE</SelectItem>
                       <SelectItem value="EQUITY">EQUITY</SelectItem>
                       {/* ...more */}
                     </SelectContent>
@@ -184,40 +186,36 @@ const AddTradeForm = ({ bucketId, onClose, onCreate }) => {
                 {lines.map((line, idx) => (
                   <div
                     key={idx}
-                    className={`flex items-center space-x-2 px-2 py-1 rounded ${
-                      line.action === "BUY" ? "bg-green-50" : "bg-red-50"
-                    }`}
+                    className="flex items-center space-x-2 px-2 py-1 rounded"
                   >
                     <Button
-                      variant="destructive"
                       size="icon"
                       onClick={() => removeLine(idx)}
+                      className="bg-gray-200 text-gray-700 hover:bg-gray-300"
                     >
                       <X className="h-4 w-4" />
                     </Button>
-                    <ToggleGroup
-                      type="single"
-                      value={line.action}
-                      onValueChange={(val) => updateLine(idx, "action", val)}
-                      className="bg-muted rounded-full p-1"
+
+                    {/* remove the X/delete button, inputs, etc. */}
+                    <Button
+                      size="sm"
+                      onClick={() =>
+                        updateLine(
+                          idx,
+                          "action",
+                          line.action === "BUY" ? "SELL" : "BUY"
+                        )
+                      }
+                      className={`px-3 py-1 rounded-full ${
+                        line.action === "BUY"
+                          ? "bg-green-500 text-white"
+                          : "bg-red-500 text-white"
+                      }`}
                     >
-                      <ToggleGroupItem
-                        value="BUY"
-                        className={
-                          line.action === "BUY" ? "bg-green-500 text-white" : ""
-                        }
-                      >
-                        BUY
-                      </ToggleGroupItem>
-                      <ToggleGroupItem
-                        value="SELL"
-                        className={
-                          line.action === "SELL" ? "bg-red-500 text-white" : ""
-                        }
-                      >
-                        SELL
-                      </ToggleGroupItem>
-                    </ToggleGroup>
+                      {line.action}
+                    </Button>
+
+                    {/* now your datetime, qty, price inputs come after */}
                     <Input
                       type="datetime-local"
                       value={line.datetime}
@@ -248,7 +246,7 @@ const AddTradeForm = ({ bucketId, onClose, onCreate }) => {
                 ))}
 
                 {/* Centered Add-Line Button */}
-                <div className="flex justify-center mt-2">
+                <div className="flex justify-center mt-2 px-2">
                   <Button
                     variant="outline"
                     onClick={addLine}
