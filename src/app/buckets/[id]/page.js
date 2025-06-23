@@ -70,110 +70,111 @@ export default function BucketDetailsPage() {
 
   return (
     <div className="container mx-auto p-4 space-y-6">
-      {/* Header */}
-      <div className="flex items-center space-x-4">
-        <Button variant="ghost" onClick={() => router.back()}>
-          ← Back
-        </Button>
-        <h1 className="text-3xl font-bold">Bucket: {bucketName}</h1>
-      </div>
+      {/* Header, budget and stats */}
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        {/* Left side: title and budget setter */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center space-x-4">
+            <Button variant="ghost" onClick={() => router.back()}>
+              ← Back
+            </Button>
+            <h1 className="text-3xl font-bold">Bucket: {bucketName}</h1>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Input
+              type="number"
+              value={budget}
+              onChange={(e) => setBudget(Number(e.target.value))}
+              placeholder="Budget"
+              className="w-32"
+            />
+            <Button
+              onClick={async () => {
+                try {
+                  await axios.post(
+                    `/api/buckets/${id}`,
+                    { budget },
+                    { withCredentials: true }
+                  );
+                } catch (err) {
+                  console.error(err);
+                }
+              }}
+            >
+              Set Budget
+            </Button>
+          </div>
+        </div>
 
-      {/* Budget setter */}
-      <div className="flex items-center space-x-2">
-        <Input
-          type="number"
-          value={budget}
-          onChange={(e) => setBudget(Number(e.target.value))}
-          placeholder="Budget"
-          className="w-32"
-        />
-        <Button
-          onClick={async () => {
-            try {
-              await axios.post(
-                `/api/buckets/${id}`,
-                { budget },
-                { withCredentials: true }
-              );
-            } catch (err) {
-              console.error(err);
-            }
-          }}
-        >
-          Set Budget
-        </Button>
-      </div>
-
-      {/* Top stats row */}
-      <div className="grid grid-cols-3 gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Budget</CardTitle>
-          </CardHeader>
-          <CardContent>${budget.toLocaleString()}</CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Available</CardTitle>
-          </CardHeader>
-          <CardContent>${available.toLocaleString()}</CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Locked</CardTitle>
-          </CardHeader>
-          <CardContent>${locked.toLocaleString()}</CardContent>
-        </Card>
-      </div>
-
-      {/* Secondary stats row: first line */}
-      <div className="grid grid-cols-4 justify-center gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Wins</CardTitle>
-          </CardHeader>
-          <CardContent>{wins}</CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Losses</CardTitle>
-          </CardHeader>
-          <CardContent>{losses}</CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Open Trades</CardTitle>
-          </CardHeader>
-          <CardContent>{openTrades}</CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Closed Trades</CardTitle>
-          </CardHeader>
-          <CardContent>{closedTrades}</CardContent>
-        </Card>
-      </div>
-
-      {/* Secondary stats row: second line */}
-      <div className="grid grid-cols-3 justify-center gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Avg Win</CardTitle>
-          </CardHeader>
-          <CardContent>${avgWin.toFixed(2)}</CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Avg Loss</CardTitle>
-          </CardHeader>
-          <CardContent>${avgLoss.toFixed(2)}</CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle>Profit / Loss</CardTitle>
-          </CardHeader>
-          <CardContent>${pnl.toLocaleString()}</CardContent>
-        </Card>
+        {/* Right side: stats */}
+        <div className="flex flex-wrap items-center gap-2">
+          <Card className="flex-row items-center w-fit p-2">
+            <CardHeader className="p-0">
+              <CardTitle className="text-sm">Budget</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0 pl-2">
+              ${budget.toLocaleString()}
+            </CardContent>
+          </Card>
+          <Card className="flex-row items-center w-fit p-2">
+            <CardHeader className="p-0">
+              <CardTitle className="text-sm">Available</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0 pl-2">
+              ${available.toLocaleString()}
+            </CardContent>
+          </Card>
+          <Card className="flex-row items-center w-fit p-2">
+            <CardHeader className="p-0">
+              <CardTitle className="text-sm">Locked</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0 pl-2">
+              ${locked.toLocaleString()}
+            </CardContent>
+          </Card>
+          <Card className="flex-row items-center w-fit p-2">
+            <CardHeader className="p-0">
+              <CardTitle className="text-sm">Wins</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0 pl-2">{wins}</CardContent>
+          </Card>
+          <Card className="flex-row items-center w-fit p-2">
+            <CardHeader className="p-0">
+              <CardTitle className="text-sm">Losses</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0 pl-2">{losses}</CardContent>
+          </Card>
+          <Card className="flex-row items-center w-fit p-2">
+            <CardHeader className="p-0">
+              <CardTitle className="text-sm">Open Trades</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0 pl-2">{openTrades}</CardContent>
+          </Card>
+          <Card className="flex-row items-center w-fit p-2">
+            <CardHeader className="p-0">
+              <CardTitle className="text-sm">Closed Trades</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0 pl-2">{closedTrades}</CardContent>
+          </Card>
+          <Card className="flex-row items-center w-fit p-2">
+            <CardHeader className="p-0">
+              <CardTitle className="text-sm">Avg Win</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0 pl-2">${avgWin.toFixed(2)}</CardContent>
+          </Card>
+          <Card className="flex-row items-center w-fit p-2">
+            <CardHeader className="p-0">
+              <CardTitle className="text-sm">Avg Loss</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0 pl-2">${avgLoss.toFixed(2)}</CardContent>
+          </Card>
+          <Card className="flex-row items-center w-fit p-2">
+            <CardHeader className="p-0">
+              <CardTitle className="text-sm">Profit / Loss</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0 pl-2">${pnl.toLocaleString()}</CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* Add Trade button */}
