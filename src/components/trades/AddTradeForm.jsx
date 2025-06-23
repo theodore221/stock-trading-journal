@@ -51,6 +51,7 @@ const AddTradeForm = ({ bucketId, onClose, onCreate }) => {
   const [tags, setTags] = useState([]);
   const [notes, setNotes] = useState("");
   const [confidence, setConfidence] = useState(0);
+  const [errors, setErrors] = useState({ symbol: false, lines: [], lineGlobal: false });
 
   const addLine = () => {
     setLines([
@@ -77,17 +78,20 @@ const AddTradeForm = ({ bucketId, onClose, onCreate }) => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    if (!symbol.trim()) {
-      alert("Symbol is required");
-      return;
-    }
+    const symbolError = !symbol.trim();
+    const lineErrors = lines.map((l) => ({
+      quantity: Number(l.quantity) <= 0,
+      price: Number(l.price) <= 0,
+    }));
     const hasValidLine = lines.some(
       (l) => Number(l.quantity) > 0 && Number(l.price) > 0
     );
-    if (!hasValidLine) {
-      alert("Please enter quantity and price for at least one line");
+    const lineGlobal = !hasValidLine;
+    if (symbolError || lineGlobal) {
+      setErrors({ symbol: symbolError, lines: lineErrors, lineGlobal });
       return;
     }
+    setErrors({ symbol: false, lines: [], lineGlobal: false });
     try {
       await axios.post(
         `/api/buckets/${bucketId}/trades`,
@@ -159,7 +163,11 @@ const AddTradeForm = ({ bucketId, onClose, onCreate }) => {
                     placeholder="e.g. SOXL"
                     value={symbol}
                     onChange={(e) => setSymbol(e.target.value)}
+                    aria-invalid={errors.symbol}
                   />
+                  {errors.symbol && (
+                    <p className="text-destructive text-sm mt-1">Symbol is required</p>
+                  )}
                 </div>
                 <div>
                   <Label htmlFor="target">Target</Label>
@@ -237,24 +245,34 @@ const AddTradeForm = ({ bucketId, onClose, onCreate }) => {
                       }
                       className="max-w-[200px]"
                     />
-                    <Input
-                      type="number"
-                      value={line.quantity}
-                      placeholder="Qty"
-                      onChange={(e) =>
-                        updateLine(idx, "quantity", Number(e.target.value))
-                      }
-                      className="w-24 text-right"
-                    />
-                    <Input
-                      type="number"
-                      value={line.price}
-                      placeholder="Price"
-                      onChange={(e) =>
-                        updateLine(idx, "price", Number(e.target.value))
-                      }
-                      className="w-24 text-right"
-                    />
+                    <div className="flex flex-col w-24 text-right">
+                      <Input
+                        type="number"
+                        value={line.quantity}
+                        placeholder="Qty"
+                        onChange={(e) =>
+                          updateLine(idx, "quantity", Number(e.target.value))
+                        }
+                        aria-invalid={errors.lines[idx]?.quantity && errors.lineGlobal}
+                      />
+                      {errors.lines[idx]?.quantity && errors.lineGlobal && (
+                        <p className="text-destructive text-xs mt-1">Required</p>
+                      )}
+                    </div>
+                    <div className="flex flex-col w-24 text-right">
+                      <Input
+                        type="number"
+                        value={line.price}
+                        placeholder="Price"
+                        onChange={(e) =>
+                          updateLine(idx, "price", Number(e.target.value))
+                        }
+                        aria-invalid={errors.lines[idx]?.price && errors.lineGlobal}
+                      />
+                      {errors.lines[idx]?.price && errors.lineGlobal && (
+                        <p className="text-destructive text-xs mt-1">Required</p>
+                      )}
+                    </div>
                   </div>
                 ))}
 
@@ -269,6 +287,9 @@ const AddTradeForm = ({ bucketId, onClose, onCreate }) => {
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
+                {errors.lineGlobal && (
+                  <p className="text-destructive text-sm px-2">Enter quantity and price for at least one line</p>
+                )}
               </div>
             </TabsContent>
 
