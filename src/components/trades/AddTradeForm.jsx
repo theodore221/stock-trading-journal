@@ -51,7 +51,11 @@ const AddTradeForm = ({ bucketId, onClose, onCreate }) => {
   const [tags, setTags] = useState([]);
   const [notes, setNotes] = useState("");
   const [confidence, setConfidence] = useState(0);
-  const [errors, setErrors] = useState({ symbol: false, lines: [], lineGlobal: false });
+  const [errors, setErrors] = useState({
+    symbol: false,
+    lines: [],
+    lineGlobal: false,
+  });
 
   const addLine = () => {
     setLines([
@@ -166,7 +170,9 @@ const AddTradeForm = ({ bucketId, onClose, onCreate }) => {
                     aria-invalid={errors.symbol}
                   />
                   {errors.symbol && (
-                    <p className="text-destructive text-sm mt-1">Symbol is required</p>
+                    <p className="text-destructive text-sm mt-1">
+                      Symbol required
+                    </p>
                   )}
                 </div>
                 <div>
@@ -253,10 +259,14 @@ const AddTradeForm = ({ bucketId, onClose, onCreate }) => {
                         onChange={(e) =>
                           updateLine(idx, "quantity", Number(e.target.value))
                         }
-                        aria-invalid={errors.lines[idx]?.quantity && errors.lineGlobal}
+                        aria-invalid={
+                          errors.lines[idx]?.quantity && errors.lineGlobal
+                        }
                       />
                       {errors.lines[idx]?.quantity && errors.lineGlobal && (
-                        <p className="text-destructive text-xs mt-1">Required</p>
+                        <p className="text-destructive text-xs mt-1">
+                          Qty required
+                        </p>
                       )}
                     </div>
                     <div className="flex flex-col w-24 text-right">
@@ -267,10 +277,14 @@ const AddTradeForm = ({ bucketId, onClose, onCreate }) => {
                         onChange={(e) =>
                           updateLine(idx, "price", Number(e.target.value))
                         }
-                        aria-invalid={errors.lines[idx]?.price && errors.lineGlobal}
+                        aria-invalid={
+                          errors.lines[idx]?.price && errors.lineGlobal
+                        }
                       />
                       {errors.lines[idx]?.price && errors.lineGlobal && (
-                        <p className="text-destructive text-xs mt-1">Required</p>
+                        <p className="text-destructive text-xs mt-1">
+                          Price required
+                        </p>
                       )}
                     </div>
                   </div>
@@ -288,7 +302,9 @@ const AddTradeForm = ({ bucketId, onClose, onCreate }) => {
                   </Button>
                 </div>
                 {errors.lineGlobal && (
-                  <p className="text-destructive text-sm px-2">Enter quantity and price for at least one line</p>
+                  <p className="text-destructive text-sm px-2">
+                    Enter quantity and price for at least one trade line
+                  </p>
                 )}
               </div>
             </TabsContent>
