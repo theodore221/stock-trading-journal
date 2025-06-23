@@ -77,6 +77,17 @@ const AddTradeForm = ({ bucketId, onClose, onCreate }) => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    if (!symbol.trim()) {
+      alert("Symbol is required");
+      return;
+    }
+    const hasValidLine = lines.some(
+      (l) => Number(l.quantity) > 0 && Number(l.price) > 0
+    );
+    if (!hasValidLine) {
+      alert("Please enter quantity and price for at least one line");
+      return;
+    }
     try {
       await axios.post(
         `/api/buckets/${bucketId}/trades`,
@@ -189,6 +200,7 @@ const AddTradeForm = ({ bucketId, onClose, onCreate }) => {
                     className="flex items-center space-x-2 px-2 py-1 rounded"
                   >
                     <Button
+                      type="button"
                       size="icon"
                       onClick={() => removeLine(idx)}
                       className="bg-gray-200 text-gray-700 hover:bg-gray-300"
@@ -198,6 +210,7 @@ const AddTradeForm = ({ bucketId, onClose, onCreate }) => {
 
                     {/* remove the X/delete button, inputs, etc. */}
                     <Button
+                      type="button"
                       size="sm"
                       onClick={() =>
                         updateLine(
@@ -248,6 +261,7 @@ const AddTradeForm = ({ bucketId, onClose, onCreate }) => {
                 {/* Centered Add-Line Button */}
                 <div className="flex justify-center mt-2 px-2">
                   <Button
+                    type="button"
                     variant="outline"
                     onClick={addLine}
                     className="w-8 h-8 p-0"
