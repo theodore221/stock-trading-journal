@@ -208,21 +208,27 @@ export default function BucketDetailsPage() {
                   <TableHead>Symbol</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Qty</TableHead>
-                  <TableHead>Entry</TableHead>
-                  <TableHead>Exit</TableHead>
+                  <TableHead>Entry ($)</TableHead>
+                  <TableHead>Exit ($)</TableHead>
                   <TableHead>Hold</TableHead>
-                  <TableHead>Return</TableHead>
+                  <TableHead>Return ($)</TableHead>
                   <TableHead>Return %</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {trades.map((t) => (
                   <TableRow key={t.id}>
-                    <TableCell>{t.date}</TableCell>
-                    <TableCell>{t.symbol || "SOXL"}</TableCell>
-                    <TableCell>{t.status || "Open"}</TableCell>
-                    <TableCell>{t.quantity}</TableCell>
-                    <TableCell>{t.entryPrice || "$1.00"}</TableCell>
+                    <TableCell>
+                      {t?.created_at
+                        ? new Date(t.created_at).toLocaleDateString("en-GB")
+                        : "-"}
+                    </TableCell>
+                    <TableCell>{t.symbol || ""}</TableCell>
+                    <TableCell>{t.status || ""}</TableCell>
+                    <TableCell>{t.trade_entries.length}</TableCell>
+                    <TableCell>
+                      {t.trade_entries?.[0]?.price.toFixed(2) ?? ""}
+                    </TableCell>
                     <TableCell>{t.exitPrice || ""}</TableCell>
                     <TableCell>{t.holdDuration || "2 Days"}</TableCell>
                     <TableCell>{t.returnAmount || ""}</TableCell>
