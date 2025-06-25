@@ -40,8 +40,6 @@ export default function BucketDetailsPage() {
         withCredentials: true,
       });
       const data = res.data;
-      console.log("printing response data)");
-      console.log(data);
       setBucketName(data.name);
       setBudget(data.budget || 0);
       setTrades(data.trades || []);
@@ -70,7 +68,6 @@ export default function BucketDetailsPage() {
 
   return (
     <div className="container mx-auto p-4 space-y-6">
-      {/* Header, budget and stats */}
       <div className="flex flex-wrap items-start gap-6">
         {/* Left side: title and budget setter */}
         <div className="flex flex-col gap-2 flex-1">
@@ -96,6 +93,7 @@ export default function BucketDetailsPage() {
                     { budget },
                     { withCredentials: true }
                   );
+                  fetchBucket(); // update stats after setting budget
                 } catch (err) {
                   console.error(err);
                 }
@@ -107,77 +105,99 @@ export default function BucketDetailsPage() {
         </div>
 
         {/* Right side: stats */}
-        <div className="flex flex-col gap-3">
-          <div className="flex flex-wrap items-center gap-3">
-            <Card className="flex-row items-center min-w-[9rem] p-2 gap-2">
+        <div className="flex flex-col gap-3 items-center">
+          <div className="flex flex-wrap justify-center items-center gap-3">
+            <Card className="flex flex-row justify-between items-center min-w-[9rem] p-4">
               <CardHeader className="p-0">
                 <CardTitle className="text-sm">Budget</CardTitle>
               </CardHeader>
-              <CardContent className="p-0 pl-2">
+              <CardContent className="p-0 text-right">
                 ${budget.toLocaleString()}
               </CardContent>
             </Card>
-            <Card className="flex-row items-center min-w-[9rem] p-2 gap-2">
+            <Card className="flex flex-row justify-between items-center min-w-[9rem] p-4">
               <CardHeader className="p-0">
                 <CardTitle className="text-sm">Available</CardTitle>
               </CardHeader>
-              <CardContent className="p-0 pl-2">
+              <CardContent className="p-0 text-right">
                 ${available.toLocaleString()}
               </CardContent>
             </Card>
-            <Card className="flex-row items-center min-w-[9rem] p-2 gap-2">
+            <Card className="flex flex-row justify-between items-center min-w-[9rem] p-4">
               <CardHeader className="p-0">
                 <CardTitle className="text-sm">Locked</CardTitle>
               </CardHeader>
-              <CardContent className="p-0 pl-2">
+              <CardContent className="p-0 text-right">
                 ${locked.toLocaleString()}
               </CardContent>
             </Card>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <Card className="flex-row items-center min-w-[9rem] p-2 gap-2">
+          <div className="flex  flex-wrap justify-center items-center gap-3">
+            <Card className="flex flex-row justify-between items-center min-w-[9rem] p-4">
               <CardHeader className="p-0">
                 <CardTitle className="text-sm">Wins</CardTitle>
               </CardHeader>
-              <CardContent className="p-0 pl-2">{wins}</CardContent>
+              <CardContent className="p-0 text-right">{wins}</CardContent>
             </Card>
-            <Card className="flex-row items-center min-w-[9rem] p-2 gap-2">
+            <Card className="flex flex-row justify-between items-center min-w-[9rem] p-4">
               <CardHeader className="p-0">
                 <CardTitle className="text-sm">Losses</CardTitle>
               </CardHeader>
-              <CardContent className="p-0 pl-2">{losses}</CardContent>
+              <CardContent className="p-0 text-right">{losses}</CardContent>
             </Card>
-            <Card className="flex-row items-center min-w-[9rem] p-2 gap-2">
+            <Card className="flex flex-row justify-between items-center min-w-[9rem] p-4">
               <CardHeader className="p-0">
                 <CardTitle className="text-sm">Open Trades</CardTitle>
               </CardHeader>
-              <CardContent className="p-0 pl-2">{openTrades}</CardContent>
+              <CardContent className="p-0 text-right">{openTrades}</CardContent>
             </Card>
-            <Card className="flex-row items-center min-w-[9rem] p-2 gap-2">
+            <Card className="flex flex-row justify-between items-center min-w-[9rem] p-4">
               <CardHeader className="p-0">
                 <CardTitle className="text-sm">Closed Trades</CardTitle>
               </CardHeader>
-              <CardContent className="p-0 pl-2">{closedTrades}</CardContent>
+              <CardContent className="p-0 text-right">
+                {closedTrades}
+              </CardContent>
             </Card>
           </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <Card className="flex-row items-center min-w-[9rem] p-2 gap-2">
+          <div className="flex flex-wrap justify-center items-center gap-3">
+            <Card className="flex flex-row justify-between items-center min-w-[9rem] p-4">
               <CardHeader className="p-0">
-                <CardTitle className="text-sm">Avg Win</CardTitle>
+                <CardTitle className="text-sm min-w-[5rem]">Avg Win</CardTitle>
               </CardHeader>
-              <CardContent className="p-0 pl-2">${avgWin.toFixed(2)}</CardContent>
+              <CardContent
+                className={`p-0 text-right ${
+                  avgWin >= 0 ? "text-green-500" : "text-red-500"
+                }`}
+              >
+                ${avgWin.toFixed(2)}
+              </CardContent>
             </Card>
-            <Card className="flex-row items-center min-w-[9rem] p-2 gap-2">
+            <Card className="flex flex-row justify-between items-center min-w-[9rem] p-4">
               <CardHeader className="p-0">
-                <CardTitle className="text-sm">Avg Loss</CardTitle>
+                <CardTitle className="text-sm min-w-[5rem]">Avg Loss</CardTitle>
               </CardHeader>
-              <CardContent className="p-0 pl-2">${avgLoss.toFixed(2)}</CardContent>
+              <CardContent
+                className={`p-0 text-right ${
+                  avgLoss >= 0 ? "text-green-500" : "text-red-500"
+                }`}
+              >
+                ${avgLoss.toFixed(2)}
+              </CardContent>
             </Card>
-            <Card className="flex-row items-center min-w-[9rem] p-2 gap-2">
+            <Card className="flex flex-row justify-between items-center min-w-[9rem] p-4">
               <CardHeader className="p-0">
-                <CardTitle className="text-sm">Profit / Loss</CardTitle>
+                <CardTitle className="text-sm min-w-[5rem]">
+                  Profit / Loss
+                </CardTitle>
               </CardHeader>
-              <CardContent className="p-0 pl-2">${pnl.toLocaleString()}</CardContent>
+              <CardContent
+                className={`p-0 text-right ${
+                  pnl >= 0 ? "text-green-500" : "text-red-500"
+                }`}
+              >
+                ${pnl.toLocaleString()}
+              </CardContent>
             </Card>
           </div>
         </div>
@@ -191,9 +211,7 @@ export default function BucketDetailsPage() {
       {showTradeForm && (
         <AddTradeForm
           bucketId={id}
-          onClose={() => {
-            setShowTradeForm(false);
-          }}
+          onClose={() => setShowTradeForm(false)}
           onCreate={handleCreate}
         />
       )}
