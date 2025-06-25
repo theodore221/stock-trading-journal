@@ -100,7 +100,7 @@ const AddTradeForm = ({ bucketId, onClose, onCreate }) => {
       await axios.post(
         `/api/buckets/${bucketId}/trades`,
         {
-          stock: symbol,
+          symbol: symbol,
           market,
           target,
           stop_loss: stopLoss,
