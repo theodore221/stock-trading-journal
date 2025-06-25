@@ -43,11 +43,10 @@ export default function BucketDetailsPage() {
       setBucketName(data.name);
       setBudget(data.budget || 0);
       setTrades(data.trades || []);
-      // simple metrics based on trades
-      setOpenTrades((data.trades || []).length);
-      setClosedTrades(0);
       setAvailable(data.budget || 0);
       setLocked(0);
+      setOpenTrades((data.trades || []).length);
+      setClosedTrades(0);
       setWins(0);
       setLosses(0);
       setAvgWin(0);
@@ -67,17 +66,28 @@ export default function BucketDetailsPage() {
   };
 
   return (
-    <div className="container mx-auto p-4 space-y-6">
-      <div className="flex flex-wrap items-start gap-6">
-        {/* Left side: title and budget setter */}
-        <div className="flex flex-col gap-2 flex-1">
-          <div className="flex items-center space-x-4">
-            <Button variant="ghost" onClick={() => router.back()}>
+    <div className="container mx-auto p-4">
+      <div className="flex">
+        {/* Left Panel */}
+        <div className="w-1/5 flex flex-col bg-muted pr-6 p-2 h-[calc(100vh-3rem)] ">
+          {/* Back Button */}
+          <div>
+            <Button
+              variant="ghost"
+              className="justify-start hover:bg-black hover:text-white"
+              onClick={() => router.back()}
+            >
               ← Back
             </Button>
-            <h1 className="text-3xl font-bold">Bucket: {bucketName}</h1>
           </div>
-          <div className="flex items-center space-x-2">
+
+          {/* Bucket Title */}
+          <div className="text-center mt-4">
+            <h1 className="text-3xl font-bold">{bucketName}</h1>
+          </div>
+
+          {/* Budget Setter */}
+          <div className="mt-6 flex items-center space-x-2">
             <Input
               type="number"
               value={budget}
@@ -93,7 +103,7 @@ export default function BucketDetailsPage() {
                     { budget },
                     { withCredentials: true }
                   );
-                  fetchBucket(); // update stats after setting budget
+                  fetchBucket();
                 } catch (err) {
                   console.error(err);
                 }
@@ -102,110 +112,103 @@ export default function BucketDetailsPage() {
               Set Budget
             </Button>
           </div>
+
+          {/* Centered Add Trade Button */}
+          <div className="my-auto flex justify-center">
+            <Button onClick={() => setShowTradeForm(true)}>+ Add Trade</Button>
+          </div>
         </div>
 
-        {/* Right side: stats */}
-        <div className="flex flex-col gap-3 items-center">
-          <div className="flex flex-wrap justify-center items-center gap-3">
-            <Card className="flex flex-row justify-between items-center min-w-[9rem] p-4">
-              <CardHeader className="p-0">
-                <CardTitle className="text-sm">Budget</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0 text-right">
-                ${budget.toLocaleString()}
-              </CardContent>
-            </Card>
-            <Card className="flex flex-row justify-between items-center min-w-[9rem] p-4">
-              <CardHeader className="p-0">
-                <CardTitle className="text-sm">Available</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0 text-right">
-                ${available.toLocaleString()}
-              </CardContent>
-            </Card>
-            <Card className="flex flex-row justify-between items-center min-w-[9rem] p-4">
-              <CardHeader className="p-0">
-                <CardTitle className="text-sm">Locked</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0 text-right">
-                ${locked.toLocaleString()}
-              </CardContent>
-            </Card>
+        {/* Right Panel */}
+        <div className="w-4/5 pl-6 flex flex-col space-y-6 max-h-[calc(100vh-4rem)] overflow-auto">
+          {/* Stats Cards */}
+          <div className="flex flex-wrap justify-center gap-3">
+            {[
+              {
+                label: "Budget",
+                value: `$${budget.toLocaleString()}`,
+                positive: null,
+              },
+              {
+                label: "Available",
+                value: `$${available.toLocaleString()}`,
+                positive: null,
+              },
+              {
+                label: "Locked",
+                value: `$${locked.toLocaleString()}`,
+                positive: null,
+              },
+              { label: "Wins", value: wins, positive: null },
+              { label: "Losses", value: losses, positive: null },
+              { label: "Open Trades", value: openTrades, positive: null },
+              { label: "Closed Trades", value: closedTrades, positive: null },
+              {
+                label: "Avg Win",
+                value: `$${avgWin.toFixed(2)}`,
+                positive: avgWin >= 0,
+              },
+              {
+                label: "Avg Loss",
+                value: `$${avgLoss.toFixed(2)}`,
+                positive: avgLoss >= 0,
+              },
+              {
+                label: "Profit / Loss",
+                value: `$${pnl.toLocaleString()}`,
+                positive: pnl >= 0,
+              },
+            ].map((stat) => (
+              <Card
+                key={stat.label}
+                className="flex flex-row justify-between items-center min-w-[10rem] p-3"
+              >
+                <CardHeader className="p-0">
+                  <CardTitle className="text-sm whitespace-nowrap min-w-[8rem]">
+                    {stat.label}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent
+                  className={`p-0 text-right ${
+                    stat.positive === null
+                      ? ""
+                      : stat.positive
+                      ? "text-green-500"
+                      : "text-red-500"
+                  }`}
+                >
+                  {stat.value}
+                </CardContent>
+              </Card>
+            ))}
           </div>
-          <div className="flex  flex-wrap justify-center items-center gap-3">
-            <Card className="flex flex-row justify-between items-center min-w-[9rem] p-4">
-              <CardHeader className="p-0">
-                <CardTitle className="text-sm">Wins</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0 text-right">{wins}</CardContent>
-            </Card>
-            <Card className="flex flex-row justify-between items-center min-w-[9rem] p-4">
-              <CardHeader className="p-0">
-                <CardTitle className="text-sm">Losses</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0 text-right">{losses}</CardContent>
-            </Card>
-            <Card className="flex flex-row justify-between items-center min-w-[9rem] p-4">
-              <CardHeader className="p-0">
-                <CardTitle className="text-sm">Open Trades</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0 text-right">{openTrades}</CardContent>
-            </Card>
-            <Card className="flex flex-row justify-between items-center min-w-[9rem] p-4">
-              <CardHeader className="p-0">
-                <CardTitle className="text-sm">Closed Trades</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0 text-right">
-                {closedTrades}
-              </CardContent>
-            </Card>
-          </div>
-          <div className="flex flex-wrap justify-center items-center gap-3">
-            <Card className="flex flex-row justify-between items-center min-w-[9rem] p-4">
-              <CardHeader className="p-0">
-                <CardTitle className="text-sm min-w-[5rem]">Avg Win</CardTitle>
-              </CardHeader>
-              <CardContent
-                className={`p-0 text-right ${
-                  avgWin >= 0 ? "text-green-500" : "text-red-500"
-                }`}
-              >
-                ${avgWin.toFixed(2)}
-              </CardContent>
-            </Card>
-            <Card className="flex flex-row justify-between items-center min-w-[9rem] p-4">
-              <CardHeader className="p-0">
-                <CardTitle className="text-sm min-w-[5rem]">Avg Loss</CardTitle>
-              </CardHeader>
-              <CardContent
-                className={`p-0 text-right ${
-                  avgLoss >= 0 ? "text-green-500" : "text-red-500"
-                }`}
-              >
-                ${avgLoss.toFixed(2)}
-              </CardContent>
-            </Card>
-            <Card className="flex flex-row justify-between items-center min-w-[9rem] p-4">
-              <CardHeader className="p-0">
-                <CardTitle className="text-sm min-w-[5rem]">
-                  Profit / Loss
-                </CardTitle>
-              </CardHeader>
-              <CardContent
-                className={`p-0 text-right ${
-                  pnl >= 0 ? "text-green-500" : "text-red-500"
-                }`}
-              >
-                ${pnl.toLocaleString()}
-              </CardContent>
-            </Card>
+
+          {/* Trades Table */}
+          <div className="overflow-auto min-h-[28rem]">
+            <Table className="min-w-full">
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Stock</TableHead>
+                  <TableHead>Qty</TableHead>
+                  <TableHead>Price</TableHead>
+                  <TableHead>Type</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {trades.map((t) => (
+                  <TableRow key={t.id}>
+                    <TableCell>{t.date}</TableCell>
+                    <TableCell>{t.stock}</TableCell>
+                    <TableCell>{t.quantity}</TableCell>
+                    <TableCell>${t.price}</TableCell>
+                    <TableCell>{t.type}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
         </div>
-      </div>
-
-      {/* Add Trade button */}
-      <div className="flex justify-end">
-        <Button onClick={() => setShowTradeForm(true)}>+ Add Trade</Button>
       </div>
 
       {showTradeForm && (
@@ -215,32 +218,6 @@ export default function BucketDetailsPage() {
           onCreate={handleCreate}
         />
       )}
-
-      {/* Trades table */}
-      <div className="overflow-auto">
-        <Table className="min-w-full">
-          <TableHeader>
-            <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Stock</TableHead>
-              <TableHead>Qty</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead>Type</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {trades.map((t) => (
-              <TableRow key={t.id}>
-                <TableCell>{t.date}</TableCell>
-                <TableCell>{t.stock}</TableCell>
-                <TableCell>{t.quantity}</TableCell>
-                <TableCell>${t.price}</TableCell>
-                <TableCell>{t.type}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
     </div>
   );
 }
