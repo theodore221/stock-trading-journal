@@ -33,6 +33,7 @@ export default function BucketDetailsPage() {
   const [trades, setTrades] = useState([]);
   const [bucketName, setBucketName] = useState("");
   const [showTradeForm, setShowTradeForm] = useState(false);
+  const [testData, setTestData] = useState({});
 
   const fetchBucket = async () => {
     try {
@@ -40,6 +41,7 @@ export default function BucketDetailsPage() {
         withCredentials: true,
       });
       const data = res.data;
+      setTestData(data);
       setBucketName(data.name);
       setBudget(data.budget || 0);
       setTrades(data.trades || []);
@@ -65,11 +67,18 @@ export default function BucketDetailsPage() {
     fetchBucket();
   };
 
+  const handleTest = () => {
+    console.log("trades");
+    console.log(trades);
+    console.log("printing response data");
+    console.log(testData);
+  };
+
   return (
     <div className="container mx-auto p-4">
       <div className="flex">
         {/* Left Panel */}
-        <div className="w-1/5 flex flex-col bg-muted pr-6 p-2 h-[calc(100vh-3rem)] ">
+        <div className="w-1/5 flex flex-col bg-muted pr-6 p-2 h-[calc(100vh-5rem)] ">
           {/* Back Button */}
           <div>
             <Button
@@ -114,8 +123,15 @@ export default function BucketDetailsPage() {
           </div>
 
           {/* Centered Add Trade Button */}
-          <div className="my-auto flex justify-center">
+          <div className="my-auto flex flex-col gap-2 justify-center">
             <Button onClick={() => setShowTradeForm(true)}>+ Add Trade</Button>
+            <Button
+              variant="destructive"
+              onClick={() => console.log("Bucket Deleted")}
+            >
+              Delete Bucket
+            </Button>
+            <Button onClick={handleTest}> Test Trade</Button>
           </div>
         </div>
 
@@ -184,25 +200,35 @@ export default function BucketDetailsPage() {
           </div>
 
           {/* Trades Table */}
-          <div className="overflow-auto min-h-[28rem]">
+          <div className="overflow-auto min-h-[19rem]">
             <Table className="min-w-full">
               <TableHeader>
                 <TableRow>
                   <TableHead>Date</TableHead>
-                  <TableHead>Stock</TableHead>
+                  <TableHead>Symbol</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead>Qty</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Type</TableHead>
+                  <TableHead>Entry</TableHead>
+                  <TableHead>Exit</TableHead>
+                  <TableHead>Hold</TableHead>
+                  <TableHead>Return</TableHead>
+                  <TableHead>Return %</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {trades.map((t) => (
                   <TableRow key={t.id}>
                     <TableCell>{t.date}</TableCell>
-                    <TableCell>{t.stock}</TableCell>
+                    <TableCell>{t.symbol || "SOXL"}</TableCell>
+                    <TableCell>{t.status || "Open"}</TableCell>
                     <TableCell>{t.quantity}</TableCell>
-                    <TableCell>${t.price}</TableCell>
-                    <TableCell>{t.type}</TableCell>
+                    <TableCell>{t.entryPrice || "$1.00"}</TableCell>
+                    <TableCell>{t.exitPrice || ""}</TableCell>
+                    <TableCell>{t.holdDuration || "2 Days"}</TableCell>
+                    <TableCell>{t.returnAmount || ""}</TableCell>
+                    <TableCell>
+                      {t.returnPercent ? `${t.returnPercent}%` : ""}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
