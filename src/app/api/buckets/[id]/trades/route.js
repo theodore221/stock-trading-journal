@@ -38,9 +38,6 @@ export async function POST(request, { params }) {
         market,
         target,
         stop_loss,
-        market,
-        target,
-        stop_loss,
       },
     ])
     .select()
