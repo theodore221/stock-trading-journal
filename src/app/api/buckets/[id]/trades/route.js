@@ -9,7 +9,7 @@ export async function GET(request, { params }) {
   const { data, error } = await supabaseAdmin
     .from("trades")
     .select(
-      "id, stock, notes, created_at, status, profit_loss, market, target, stop_loss, trade_entries(id, action, date_time, quantity, price, notes)"
+      "id, symbol, notes, created_at, status, profit_loss, market, target, stop_loss, trade_entries(id, action, date_time, quantity, price, notes)"
     )
     .eq("bucket_id", bucketId)
     .eq("user_id", user.id)
@@ -24,7 +24,7 @@ export async function GET(request, { params }) {
 export async function POST(request, { params }) {
   const { id: bucketId } = await params;
   const user = await verifyUserFromCookie(request);
-  const { stock, notes, market, target, stop_loss, entries } =
+  const { symbol, notes, market, target, stop_loss, entries } =
     await request.json();
 
   const { data: trade, error } = await supabaseAdmin
@@ -33,7 +33,7 @@ export async function POST(request, { params }) {
       {
         user_id: user.id,
         bucket_id: bucketId,
-        stock,
+        symbol,
         notes,
         market,
         target,
