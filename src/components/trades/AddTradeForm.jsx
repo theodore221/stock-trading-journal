@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -31,31 +31,60 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import axios from "axios";
 
-const AddTradeForm = ({ bucketId, onClose, onCreate }) => {
-  const [lines, setLines] = useState([
-    {
-      action: "BUY",
-      datetime: new Date().toISOString().slice(0, 16),
-      quantity: 0,
-      price: 0,
-    },
-  ]);
+const AddTradeForm = ({ bucketId, trade = null, onClose, onCreate }) => {
+  const [lines, setLines] = useState(() =>
+    trade?.trade_entries?.length
+      ? trade.trade_entries.map((e) => ({
+          action: e.action,
+          datetime: e.date_time?.slice(0, 16) || "",
+          quantity: e.quantity,
+          price: e.price,
+        }))
+      : [
+          {
+            action: "BUY",
+            datetime: new Date().toISOString().slice(0, 16),
+            quantity: 0,
+            price: 0,
+          },
+        ]
+  );
 
   // General meta-fields
-  const [market, setMarket] = useState("");
-  const [symbol, setSymbol] = useState("");
-  const [target, setTarget] = useState("");
-  const [stopLoss, setStopLoss] = useState("");
+  const [market, setMarket] = useState(trade?.market || "");
+  const [symbol, setSymbol] = useState(trade?.symbol || "");
+  const [target, setTarget] = useState(trade?.target || "");
+  const [stopLoss, setStopLoss] = useState(trade?.stop_loss || "");
 
   // Journal fields
-  const [tags, setTags] = useState([]);
-  const [notes, setNotes] = useState("");
-  const [confidence, setConfidence] = useState(0);
+  const [tags, setTags] = useState(trade?.tags || []);
+  const [notes, setNotes] = useState(trade?.notes || "");
+  const [confidence, setConfidence] = useState(trade?.confidence || 0);
   const [errors, setErrors] = useState({
     symbol: false,
     lines: [],
     lineGlobal: false,
   });
+
+  useEffect(() => {
+    if (trade) {
+      setMarket(trade.market || "");
+      setSymbol(trade.symbol || "");
+      setTarget(trade.target || "");
+      setStopLoss(trade.stop_loss || "");
+      setTags(trade.tags || []);
+      setNotes(trade.notes || "");
+      setConfidence(trade.confidence || 0);
+      setLines(
+        trade.trade_entries?.map((e) => ({
+          action: e.action,
+          datetime: e.date_time?.slice(0, 16) || "",
+          quantity: e.quantity,
+          price: e.price,
+        })) || []
+      );
+    }
+  }, [trade]);
 
   const addLine = () => {
     setLines([
@@ -97,26 +126,35 @@ const AddTradeForm = ({ bucketId, onClose, onCreate }) => {
     }
     setErrors({ symbol: false, lines: [], lineGlobal: false });
     try {
-      await axios.post(
-        `/api/buckets/${bucketId}/trades`,
-        {
-          symbol: symbol,
-          market,
-          target,
-          stop_loss: stopLoss,
-          entries: lines.map((l) => ({
-            action: l.action,
-            date_time: l.datetime,
-            quantity: l.quantity,
-            price: l.price,
-          })),
-          // journal fields you can pick up later on server if needed
-          notes,
-          tags,
-          confidence,
-        },
-        { withCredentials: true }
-      );
+      const payload = {
+        symbol,
+        market,
+        target,
+        stop_loss: stopLoss,
+        entries: lines.map((l) => ({
+          action: l.action,
+          date_time: l.datetime,
+          quantity: l.quantity,
+          price: l.price,
+        })),
+        notes,
+        tags,
+        confidence,
+      };
+
+      if (trade?.id) {
+        await axios.put(
+          `/api/buckets/${bucketId}/trades/${trade.id}`,
+          payload,
+          { withCredentials: true }
+        );
+      } else {
+        await axios.post(
+          `/api/buckets/${bucketId}/trades`,
+          payload,
+          { withCredentials: true }
+        );
+      }
       onCreate?.();
       onClose();
     } catch (err) {
@@ -128,7 +166,7 @@ const AddTradeForm = ({ bucketId, onClose, onCreate }) => {
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-4xl">
         <DialogHeader>
-          <DialogTitle>New Trade</DialogTitle>
+          <DialogTitle>{trade ? "Edit Trade" : "New Trade"}</DialogTitle>
           <DialogDescription>
             Enter descriptions of your trade
           </DialogDescription>
