@@ -33,6 +33,7 @@ export default function BucketDetailsPage() {
   const [trades, setTrades] = useState([]);
   const [bucketName, setBucketName] = useState("");
   const [showTradeForm, setShowTradeForm] = useState(false);
+  const [editingTrade, setEditingTrade] = useState(null);
   const [testData, setTestData] = useState({});
 
   const fetchBucket = async () => {
@@ -124,7 +125,14 @@ export default function BucketDetailsPage() {
 
           {/* Centered Add Trade Button */}
           <div className="my-auto flex flex-col gap-2 justify-center">
-            <Button onClick={() => setShowTradeForm(true)}>+ Add Trade</Button>
+            <Button
+              onClick={() => {
+                setEditingTrade(null);
+                setShowTradeForm(true);
+              }}
+            >
+              + Add Trade
+            </Button>
             <Button
               variant="destructive"
               onClick={() => console.log("Bucket Deleted")}
@@ -216,8 +224,15 @@ export default function BucketDetailsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {trades.map((t) => (
-                  <TableRow key={t.id}>
+              {trades.map((t) => (
+                  <TableRow
+                    key={t.id}
+                    className="cursor-pointer"
+                    onClick={() => {
+                      setEditingTrade(t);
+                      setShowTradeForm(true);
+                    }}
+                  >
                     <TableCell>
                       {t?.created_at
                         ? new Date(t.created_at).toLocaleDateString("en-GB")
@@ -246,7 +261,11 @@ export default function BucketDetailsPage() {
       {showTradeForm && (
         <AddTradeForm
           bucketId={id}
-          onClose={() => setShowTradeForm(false)}
+          trade={editingTrade}
+          onClose={() => {
+            setShowTradeForm(false);
+            setEditingTrade(null);
+          }}
           onCreate={handleCreate}
         />
       )}
