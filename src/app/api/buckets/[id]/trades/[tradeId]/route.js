@@ -52,3 +52,29 @@ export async function PUT(request, { params }) {
 
   return NextResponse.json(trade);
 }
+
+export async function DELETE(request, { params }) {
+  const { id: bucketId, tradeId } = params;
+  const user = await verifyUserFromCookie(request);
+
+  const { error: entriesError } = await supabaseAdmin
+    .from("trade_entries")
+    .delete()
+    .eq("trade_id", tradeId);
+  if (entriesError) {
+    return NextResponse.json({ error: entriesError.message }, { status: 500 });
+  }
+
+  const { error } = await supabaseAdmin
+    .from("trades")
+    .delete()
+    .eq("id", tradeId)
+    .eq("bucket_id", bucketId)
+    .eq("user_id", user.id);
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ message: "Trade deleted" }, { status: 200 });
+}

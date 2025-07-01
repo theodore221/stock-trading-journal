@@ -162,6 +162,19 @@ const AddTradeForm = ({ bucketId, trade = null, onClose, onCreate }) => {
     }
   };
 
+  const handleDelete = async () => {
+    if (!trade?.id) return;
+    try {
+      await axios.delete(`/api/buckets/${bucketId}/trades/${trade.id}`, {
+        withCredentials: true,
+      });
+      onCreate?.();
+      onClose();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-4xl">
@@ -406,7 +419,12 @@ const AddTradeForm = ({ bucketId, trade = null, onClose, onCreate }) => {
             </TabsContent>
           </Tabs>
 
-          <div className="text-right mt-4">
+          <div className="flex justify-between mt-4">
+            {trade?.id && (
+              <Button type="button" variant="destructive" onClick={handleDelete}>
+                Delete
+              </Button>
+            )}
             <Button type="submit">Save</Button>
           </div>
         </form>
