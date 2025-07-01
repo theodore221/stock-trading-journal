@@ -149,11 +149,9 @@ const AddTradeForm = ({ bucketId, trade = null, onClose, onCreate }) => {
           { withCredentials: true }
         );
       } else {
-        await axios.post(
-          `/api/buckets/${bucketId}/trades`,
-          payload,
-          { withCredentials: true }
-        );
+        await axios.post(`/api/buckets/${bucketId}/trades`, payload, {
+          withCredentials: true,
+        });
       }
       onCreate?.();
       onClose();
@@ -421,11 +419,17 @@ const AddTradeForm = ({ bucketId, trade = null, onClose, onCreate }) => {
 
           <div className="flex justify-between mt-4">
             {trade?.id && (
-              <Button type="button" variant="destructive" onClick={handleDelete}>
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={handleDelete}
+              >
                 Delete
               </Button>
             )}
-            <Button type="submit">Save</Button>
+            <Button type="submit" className="ml-auto">
+              Save
+            </Button>
           </div>
         </form>
       </DialogContent>
