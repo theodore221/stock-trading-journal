@@ -176,26 +176,34 @@ const AddTradeForm = ({ bucketId, trade = null, onClose, onCreate }) => {
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-4xl">
-        <DialogHeader>
-          <DialogTitle>{trade ? "Edit Trade" : "New Trade"}</DialogTitle>
-          <DialogDescription>
-            Enter descriptions of your trade
-          </DialogDescription>
-        </DialogHeader>
+        <Tabs defaultValue="general">
+          <DialogHeader className="flex pr-2 pt-5 mb-8">
+            <div className="flex justify-between items-center ">
+              <div className="flex flex-col">
+                <DialogTitle className="my-2">
+                  {trade ? "Edit Trade" : "New Trade"}
+                </DialogTitle>
+                <DialogDescription>
+                  Enter descriptions of your trade
+                </DialogDescription>
+              </div>
 
-        <form onSubmit={onSubmit} className="space-y-6">
-          <Tabs defaultValue="general">
-            <TabsList>
-              <TabsTrigger value="general">General</TabsTrigger>
-              <TabsTrigger value="journal">Journal</TabsTrigger>
-            </TabsList>
+              <TabsList>
+                <TabsTrigger value="general">General</TabsTrigger>
+                <TabsTrigger value="journal">Journal</TabsTrigger>
+              </TabsList>
+            </div>
+          </DialogHeader>
 
+          <form onSubmit={onSubmit} className="space-y-6">
             {/* ─── GENERAL TAB ─── */}
             <TabsContent value="general" className="space-y-4">
               {/* Market / Symbol / Target / Stop-Loss */}
-              <div className="grid grid-cols-4 gap-4">
+              <div className="grid grid-cols-4 gap-3">
                 <div>
-                  <Label htmlFor="market">Market</Label>
+                  <Label htmlFor="market" className="mb-2">
+                    Market
+                  </Label>
                   <Select value={market} onValueChange={setMarket}>
                     <SelectTrigger id="market">
                       <SelectValue placeholder="Select market" />
@@ -210,7 +218,9 @@ const AddTradeForm = ({ bucketId, trade = null, onClose, onCreate }) => {
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="symbol">Symbol</Label>
+                  <Label htmlFor="symbol" className="mb-2">
+                    Symbol
+                  </Label>
                   <Input
                     id="symbol"
                     placeholder="e.g. SOXL"
@@ -225,7 +235,9 @@ const AddTradeForm = ({ bucketId, trade = null, onClose, onCreate }) => {
                   )}
                 </div>
                 <div>
-                  <Label htmlFor="target">Target</Label>
+                  <Label htmlFor="target" className="mb-2">
+                    Target
+                  </Label>
                   <Input
                     id="target"
                     type="number"
@@ -235,7 +247,9 @@ const AddTradeForm = ({ bucketId, trade = null, onClose, onCreate }) => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="stopLoss">Stop-Loss</Label>
+                  <Label htmlFor="stopLoss" className="mb-2">
+                    Stop-Loss
+                  </Label>
                   <Input
                     id="stopLoss"
                     type="number"
@@ -362,7 +376,9 @@ const AddTradeForm = ({ bucketId, trade = null, onClose, onCreate }) => {
             <TabsContent value="journal" className="space-y-4">
               {/* Tags */}
               <div>
-                <Label htmlFor="tags">Tags</Label>
+                <Label htmlFor="tags" className="mb-2">
+                  Tags
+                </Label>
                 <Select
                   multiple
                   onValueChange={(vals) => setTags(vals)}
@@ -381,7 +397,9 @@ const AddTradeForm = ({ bucketId, trade = null, onClose, onCreate }) => {
 
               {/* Notes */}
               <div>
-                <Label htmlFor="notes">Notes</Label>
+                <Label htmlFor="notes" className="mb-2">
+                  Notes
+                </Label>
                 <Textarea
                   id="notes"
                   placeholder="Write your notes..."
@@ -393,7 +411,7 @@ const AddTradeForm = ({ bucketId, trade = null, onClose, onCreate }) => {
 
               {/* Confidence Slider */}
               <div>
-                <Label>Confidence: {confidence}</Label>
+                <Label className="mb-4">Confidence: {confidence}</Label>
                 <Slider
                   value={[confidence]}
                   onValueChange={(val) => setConfidence(val[0])}
@@ -409,29 +427,29 @@ const AddTradeForm = ({ bucketId, trade = null, onClose, onCreate }) => {
 
               {/* Upload Screenshots */}
               <div>
-                <Label>Upload screenshots</Label>
+                <Label className="mb-2">Upload screenshots</Label>
                 <div className="border-dashed border rounded-lg p-4 text-center">
                   <Input type="file" accept="image/*" multiple />
                 </div>
               </div>
             </TabsContent>
-          </Tabs>
 
-          <div className="flex justify-between mt-4">
-            {trade?.id && (
-              <Button
-                type="button"
-                variant="destructive"
-                onClick={handleDelete}
-              >
-                Delete
+            <div className="flex justify-between mt-4">
+              {trade?.id && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={handleDelete}
+                >
+                  Delete
+                </Button>
+              )}
+              <Button type="submit" className="ml-auto">
+                Save
               </Button>
-            )}
-            <Button type="submit" className="ml-auto">
-              Save
-            </Button>
-          </div>
-        </form>
+            </div>
+          </form>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
