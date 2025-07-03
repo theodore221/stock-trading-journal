@@ -218,13 +218,15 @@ export default function BucketDetailsPage() {
                   <TableHead>Qty</TableHead>
                   <TableHead>Entry ($)</TableHead>
                   <TableHead>Exit ($)</TableHead>
+                  <TableHead>Ent Total ($)</TableHead>
+                  <TableHead>Ext Total ($)</TableHead>
                   <TableHead>Hold</TableHead>
                   <TableHead>Return ($)</TableHead>
                   <TableHead>Return %</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-              {trades.map((t) => (
+                {trades.map((t) => (
                   <TableRow
                     key={t.id}
                     className="cursor-pointer"
@@ -242,7 +244,28 @@ export default function BucketDetailsPage() {
                     <TableCell>{t.status || ""}</TableCell>
                     <TableCell>{t.trade_entries.length}</TableCell>
                     <TableCell>
-                      {t.trade_entries?.[0]?.price.toFixed(2) ?? ""}
+                      {(
+                        t.trade_entries?.reduce((result, i) => {
+                          if (i.action === "BUY") {
+                            return result + i.price * i.quantity;
+                          }
+                          return result;
+                        }, 0) /
+                        t.trade_entries.filter((i) => {
+                          return i.action === "BUY";
+                        }).length
+                      ).toFixed(2) ?? ""}
+                    </TableCell>
+                    <TableCell>{t.exitPrice || ""}</TableCell>
+                    <TableCell>
+                      {t.trade_entries
+                        ?.reduce((result, i) => {
+                          if (i.action === "BUY") {
+                            return result + i.price * i.quantity;
+                          }
+                          return result;
+                        }, 0)
+                        .toFixed(2) || ""}
                     </TableCell>
                     <TableCell>{t.exitPrice || ""}</TableCell>
                     <TableCell>{t.holdDuration || "2 Days"}</TableCell>
