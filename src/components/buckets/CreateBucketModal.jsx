@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 
 export default function CreateBucketModal({ onClose, onCreate }) {
   const [name, setName] = useState("");
+  const [bucketSize, setBucketSize] = useState(0);
 
   return (
     <Dialog open onOpenChange={(open) => !open && onClose()}>
@@ -34,12 +35,22 @@ export default function CreateBucketModal({ onClose, onCreate }) {
               placeholder="My Strategy"
             />
           </div>
+          <div className="grid gap-2">
+            <Label htmlFor="bucket-size">Bucket Size</Label>
+            <Input
+              id="bucket-size"
+              type="number"
+              value={bucketSize}
+              onChange={(e) => setBucketSize(Number(e.target.value))}
+              placeholder="1000"
+            />
+          </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button onClick={() => onCreate(name)}>Create</Button>
+          <Button onClick={() => onCreate(name, bucketSize)}>Create</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

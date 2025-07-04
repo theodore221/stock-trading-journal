@@ -35,9 +35,9 @@ export default function Buckets() {
     fetchBuckets();
   }, [fetchBuckets]);
 
-  const handleCreate = (name) => {
+  const handleCreate = (name, bucketSize) => {
     console.log(buckets);
-    createBucket(name);
+    createBucket(name, bucketSize);
     setShowCreateModal(false);
   };
 

@@ -20,7 +20,8 @@ import AddTradeForm from "@/components/trades/AddTradeForm";
 export default function BucketDetailsPage() {
   const { id } = useParams();
   const router = useRouter();
-  const [budget, setBudget] = useState(0);
+  const [bucketSize, setBucketSize] = useState(0);
+  const [amount, setAmount] = useState(0);
   const [available, setAvailable] = useState(0);
   const [locked, setLocked] = useState(0);
   const [wins, setWins] = useState(0);
@@ -44,9 +45,9 @@ export default function BucketDetailsPage() {
       const data = res.data;
       setTestData(data);
       setBucketName(data.name);
-      setBudget(data.budget || 0);
+      setBucketSize(data.bucket_size || 0);
       setTrades(data.trades || []);
-      setAvailable(data.budget || 0);
+      setAvailable(data.bucket_size || 0);
       setLocked(0);
       setOpenTrades((data.trades || []).length);
       setClosedTrades(0);
@@ -96,13 +97,13 @@ export default function BucketDetailsPage() {
             <h1 className="text-3xl font-bold">{bucketName}</h1>
           </div>
 
-          {/* Budget Setter */}
+          {/* Bucket Size Adjuster */}
           <div className="mt-6 flex items-center space-x-2">
             <Input
               type="number"
-              value={budget}
-              onChange={(e) => setBudget(Number(e.target.value))}
-              placeholder="Budget"
+              value={amount}
+              onChange={(e) => setAmount(Number(e.target.value))}
+              placeholder="Amount"
               className="w-32"
             />
             <Button
@@ -110,16 +111,35 @@ export default function BucketDetailsPage() {
                 try {
                   await axios.post(
                     `/api/buckets/${id}`,
-                    { budget },
+                    { bucket_size: bucketSize + amount },
                     { withCredentials: true }
                   );
+                  setAmount(0);
                   fetchBucket();
                 } catch (err) {
                   console.error(err);
                 }
               }}
             >
-              Set Budget
+              +
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={async () => {
+                try {
+                  await axios.post(
+                    `/api/buckets/${id}`,
+                    { bucket_size: bucketSize - amount },
+                    { withCredentials: true }
+                  );
+                  setAmount(0);
+                  fetchBucket();
+                } catch (err) {
+                  console.error(err);
+                }
+              }}
+            >
+              -
             </Button>
           </div>
 
@@ -149,8 +169,8 @@ export default function BucketDetailsPage() {
           <div className="flex flex-wrap justify-center gap-3">
             {[
               {
-                label: "Budget",
-                value: `$${budget.toLocaleString()}`,
+                label: "Bucket Size",
+                value: `$${bucketSize.toLocaleString()}`,
                 positive: null,
               },
               {

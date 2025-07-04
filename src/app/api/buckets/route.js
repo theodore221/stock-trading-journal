@@ -28,10 +28,10 @@ export async function POST(request) {
   try {
     const user = await verifyUserFromCookie(request);
 
-    const { name } = await request.json();
+    const { name, bucket_size } = await request.json();
     const { data, error } = await supabaseAdmin
       .from("buckets")
-      .insert([{ user_id: user.id, name }])
+      .insert([{ user_id: user.id, name, bucket_size }])
       .select()
       .single();
 
