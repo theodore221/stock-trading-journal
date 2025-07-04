@@ -11,14 +11,19 @@ export const useBucketStore = create((set, get) => ({
       console.error(e);
     }
   },
-  createBucket: async (name) => {
+  createBucket: async (name, bucketSize) => {
     const tempId = crypto.randomUUID();
-    set({ buckets: [...get().buckets, { id: tempId, name, trade_count: 0 }] });
+    set({
+      buckets: [
+        ...get().buckets,
+        { id: tempId, name, bucket_size: bucketSize, trade_count: 0 },
+      ],
+    });
     try {
       const res = await axios.post(
         "/api/buckets",
-        { name },
-        { withCredentaisl: true }
+        { name, bucket_size: bucketSize },
+        { withCredentials: true }
       );
       set({
         buckets: get().buckets.map((b) => (b.id === tempId ? res.data : b)),

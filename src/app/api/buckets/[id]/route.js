@@ -40,11 +40,11 @@ export async function POST(request, { params }) {
   try {
     const user = await verifyUserFromCookie(request);
     const bucketId = params.id;
-    const { budget } = await request.json();
+    const { bucket_size } = await request.json();
 
     const { data, error } = await supabaseAdmin
       .from("buckets")
-      .update({ budget })
+      .update({ bucket_size })
       .eq("id", bucketId)
       .eq("user_id", user.id)
       .select()
