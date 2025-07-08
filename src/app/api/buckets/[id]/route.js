@@ -30,7 +30,16 @@ export async function GET(request, { params }) {
       return NextResponse.json({ error: tradesErr.message }, { status: 500 });
     }
 
-    return NextResponse.json({ ...bucket, trades });
+    const { data: transactions, error: txErr } = await supabaseAdmin
+      .from("bucket_transactions")
+      .select("id, amount, created_at")
+      .eq("bucket_id", bucketId)
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: true });
+    if (txErr) {
+      return NextResponse.json({ error: txErr.message }, { status: 500 });
+    }
+    return NextResponse.json({ ...bucket, trades, transactions });
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 401 });
   }
@@ -42,6 +51,18 @@ export async function POST(request, { params }) {
     const bucketId = params.id;
     const { bucket_size } = await request.json();
 
+    const { data: current, error: currentErr } = await supabaseAdmin
+      .from("buckets")
+      .select("bucket_size")
+      .eq("id", bucketId)
+      .eq("user_id", user.id)
+      .single();
+    if (currentErr) {
+      return NextResponse.json({ error: currentErr.message }, { status: 500 });
+    }
+
+    const delta = bucket_size - (current?.bucket_size || 0);
+
     const { data, error } = await supabaseAdmin
       .from("buckets")
       .update({ bucket_size })
@@ -52,6 +73,12 @@ export async function POST(request, { params }) {
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    if (delta !== 0) {
+      await supabaseAdmin.from("bucket_transactions").insert([
+        { bucket_id: bucketId, user_id: user.id, amount: delta },
+      ]);
     }
 
     return NextResponse.json(data);

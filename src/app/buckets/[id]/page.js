@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 
@@ -43,10 +43,19 @@ export default function BucketDetailsPage() {
   const [avgLoss, setAvgLoss] = useState(0);
   const [pnl, setPnl] = useState(0);
   const [trades, setTrades] = useState([]);
+  const [transactions, setTransactions] = useState([]);
   const [bucketName, setBucketName] = useState("");
   const [showTradeForm, setShowTradeForm] = useState(false);
   const [editingTrade, setEditingTrade] = useState(null);
   const [testData, setTestData] = useState({});
+
+  const transactionRows = useMemo(() => {
+    let balance = 0;
+    return transactions.map((t) => {
+      balance += Number(t.amount);
+      return { ...t, balance };
+    });
+  }, [transactions]);
 
   const fetchBucket = async () => {
     try {
@@ -58,6 +67,7 @@ export default function BucketDetailsPage() {
       setBucketName(data.name);
       setBucketSize(data.bucket_size || 0);
       setTrades(data.trades || []);
+      setTransactions(data.transactions || []);
 
       let computedCash = data.bucket_size || 0;
       let computedPos = 0;
@@ -237,6 +247,49 @@ export default function BucketDetailsPage() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+
+          {/* Bucket Activity Table */}
+          <div className="overflow-auto">
+            <h2 className="font-semibold mb-2">Bucket Activity</h2>
+            <Table className="min-w-full">
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead>Change ($)</TableHead>
+                  <TableHead>Balance ($)</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {transactionRows.map((tx, idx) => (
+                  <TableRow key={tx.id ?? idx}>
+                    <TableCell>
+                      {tx.created_at
+                        ? new Date(tx.created_at).toLocaleDateString("en-GB")
+                        : "-"}
+                    </TableCell>
+                    <TableCell>
+                      {idx === 0
+                        ? "Initial Bucket Size"
+                        : tx.amount > 0
+                        ? "Deposit"
+                        : "Withdraw"}
+                    </TableCell>
+                    <TableCell
+                      className={
+                        tx.amount >= 0 ? "text-green-600" : "text-red-600"
+                      }
+                    >
+                      {tx.amount >= 0
+                        ? `+$${Number(tx.amount).toLocaleString()}`
+                        : `-$${Math.abs(Number(tx.amount)).toLocaleString()}`}
+                    </TableCell>
+                    <TableCell>{`$${Number(tx.balance).toLocaleString()}`}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
 
           {/* Trades Table */}

@@ -40,6 +40,12 @@ export async function POST(request) {
         status: 500,
       });
 
+    if (bucket_size) {
+      await supabaseAdmin.from("bucket_transactions").insert([
+        { bucket_id: data.id, user_id: user.id, amount: bucket_size },
+      ]);
+    }
+
     return new Response(JSON.stringify(data), { status: 200 });
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 401 });
