@@ -7,6 +7,7 @@ import axios from "axios";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -305,12 +306,16 @@ export default function BucketDetailsPage() {
                 {adjustType === "deposit" ? "Deposit Funds" : "Withdraw Funds"}
               </DialogTitle>
             </DialogHeader>
-            <div className="grid gap-4 mt-2">
+            <div className="grid gap-2 mt-2">
+              <Label htmlFor="adjust-amount">$ Amount</Label>
               <Input
+                id="adjust-amount"
                 type="number"
+                step="0.01"
+                inputMode="decimal"
                 value={adjustAmount}
-                onChange={(e) => setAdjustAmount(Number(e.target.value))}
-                placeholder="Amount"
+                onChange={(e) => setAdjustAmount(parseFloat(e.target.value))}
+                placeholder="0.00"
               />
             </div>
             <DialogFooter>
