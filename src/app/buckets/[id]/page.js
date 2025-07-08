@@ -147,13 +147,17 @@ export default function BucketDetailsPage() {
             >
               + Add Trade
             </Button>
+            <Button onClick={handleTest}> Test Trade</Button>
+          </div>
+
+          {/* Delete Bucket Button */}
+          <div className="mt-auto flex justify-end">
             <Button
               variant="destructive"
               onClick={() => console.log("Bucket Deleted")}
             >
               Delete Bucket
             </Button>
-            <Button onClick={handleTest}> Test Trade</Button>
           </div>
         </div>
 
