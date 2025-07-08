@@ -32,8 +32,8 @@ export default function BucketDetailsPage() {
   const [adjustAmount, setAdjustAmount] = useState(0);
   const [showAdjustModal, setShowAdjustModal] = useState(false);
   const [adjustType, setAdjustType] = useState("deposit");
-  const [available, setAvailable] = useState(0);
-  const [locked, setLocked] = useState(0);
+  const [cash, setCash] = useState(0);
+  const [position, setPosition] = useState(0);
   const [wins, setWins] = useState(0);
   const [losses, setLosses] = useState(0);
   const [openTrades, setOpenTrades] = useState(0);
@@ -57,8 +57,8 @@ export default function BucketDetailsPage() {
       setBucketName(data.name);
       setBucketSize(data.bucket_size || 0);
       setTrades(data.trades || []);
-      setAvailable(data.bucket_size || 0);
-      setLocked(0);
+      setCash(data.bucket_size || 0);
+      setPosition(0);
       setOpenTrades((data.trades || []).length);
       setClosedTrades(0);
       setWins(0);
@@ -128,6 +128,15 @@ export default function BucketDetailsPage() {
             </Button>
           </div>
 
+          {/* Bucket Stats */}
+          <div className="mt-4 text-center space-y-1">
+            <div className="text-3xl font-bold text-blue-600">
+              {`$${bucketSize.toLocaleString()}`}
+            </div>
+            <div>{`Cash: $${cash.toLocaleString()}`}</div>
+            <div>{`Position: $${position.toLocaleString()}`}</div>
+          </div>
+
           {/* Centered Add Trade Button */}
           <div className="my-auto flex flex-col gap-2 justify-center">
             <Button
@@ -159,13 +168,13 @@ export default function BucketDetailsPage() {
                 positive: null,
               },
               {
-                label: "Available",
-                value: `$${available.toLocaleString()}`,
+                label: "Cash",
+                value: `$${cash.toLocaleString()}`,
                 positive: null,
               },
               {
-                label: "Locked",
-                value: `$${locked.toLocaleString()}`,
+                label: "Position",
+                value: `$${position.toLocaleString()}`,
                 positive: null,
               },
               { label: "Wins", value: wins, positive: null },
