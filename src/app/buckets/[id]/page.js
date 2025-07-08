@@ -7,6 +7,7 @@ import axios from "axios";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Trash } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import {
   Dialog,
@@ -249,11 +250,11 @@ export default function BucketDetailsPage() {
                   <TableHead>Qty</TableHead>
                   <TableHead>Entry ($)</TableHead>
                   <TableHead>Exit ($)</TableHead>
-                  <TableHead>Ent Total ($)</TableHead>
-                  <TableHead>Ext Total ($)</TableHead>
+                  {/* Removed Ent Total and Ext Total columns */}
                   <TableHead>Hold</TableHead>
                   <TableHead>Return ($)</TableHead>
                   <TableHead>Return %</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -288,21 +289,26 @@ export default function BucketDetailsPage() {
                       ).toFixed(2) ?? ""}
                     </TableCell>
                     <TableCell>{t.exitPrice || ""}</TableCell>
-                    <TableCell>
-                      {t.trade_entries
-                        ?.reduce((result, i) => {
-                          if (i.action === "BUY") {
-                            return result + i.price * i.quantity;
-                          }
-                          return result;
-                        }, 0)
-                        .toFixed(2) || ""}
-                    </TableCell>
-                    <TableCell>{t.exitPrice || ""}</TableCell>
                     <TableCell>{t.holdDuration || "2 Days"}</TableCell>
                     <TableCell>{t.returnAmount || ""}</TableCell>
                     <TableCell>
                       {t.returnPercent ? `${t.returnPercent}%` : ""}
+                    </TableCell>
+                    <TableCell className="space-x-1">
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        Sell
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Trash className="size-4" />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
