@@ -57,8 +57,25 @@ export default function BucketDetailsPage() {
       setBucketName(data.name);
       setBucketSize(data.bucket_size || 0);
       setTrades(data.trades || []);
-      setCash(data.bucket_size || 0);
-      setPosition(0);
+
+      let computedCash = data.bucket_size || 0;
+      let computedPos = 0;
+      (data.trades || []).forEach((t) => {
+        (t.trade_entries || []).forEach((e) => {
+          const value = Number(e.quantity) * Number(e.price);
+          if (e.action === "BUY") {
+            computedCash -= value;
+            computedPos += value;
+          } else if (e.action === "SELL") {
+            computedCash += value;
+            computedPos -= value;
+          }
+        });
+      });
+      if (computedCash < 0) computedCash = 0;
+      if (computedCash > (data.bucket_size || 0)) computedCash = data.bucket_size || 0;
+      setCash(computedCash);
+      setPosition(computedPos);
       setOpenTrades((data.trades || []).length);
       setClosedTrades(0);
       setWins(0);
@@ -299,6 +316,7 @@ export default function BucketDetailsPage() {
         <AddTradeForm
           bucketId={id}
           trade={editingTrade}
+          cash={cash}
           onClose={() => {
             setShowTradeForm(false);
             setEditingTrade(null);

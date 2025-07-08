@@ -31,7 +31,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import axios from "axios";
 
-const AddTradeForm = ({ bucketId, trade = null, onClose, onCreate }) => {
+const AddTradeForm = ({ bucketId, trade = null, onClose, onCreate, cash = 0 }) => {
   const [lines, setLines] = useState(() =>
     trade?.trade_entries?.length
       ? trade.trade_entries.map((e) => ({
@@ -65,6 +65,7 @@ const AddTradeForm = ({ bucketId, trade = null, onClose, onCreate }) => {
     lines: [],
     lineGlobal: false,
   });
+  const [cashError, setCashError] = useState(false);
 
   useEffect(() => {
     if (trade) {
@@ -125,6 +126,21 @@ const AddTradeForm = ({ bucketId, trade = null, onClose, onCreate }) => {
       return;
     }
     setErrors({ symbol: false, lines: [], lineGlobal: false });
+
+    // Calculate total cost of BUY lines to ensure sufficient cash
+    const buyCost = lines.reduce((sum, l) => {
+      if (l.action === "BUY") {
+        return sum + Number(l.quantity) * Number(l.price);
+      }
+      return sum;
+    }, 0);
+
+    if (buyCost > cash) {
+      setCashError(true);
+      return;
+    }
+
+    setCashError(false);
     try {
       const payload = {
         symbol,
@@ -443,6 +459,11 @@ const AddTradeForm = ({ bucketId, trade = null, onClose, onCreate }) => {
                 >
                   Delete
                 </Button>
+              )}
+              {cashError && (
+                <p className="text-destructive mr-auto self-center">
+                  Insufficient cash in bucket
+                </p>
               )}
               <Button type="submit" className="ml-auto">
                 Save
