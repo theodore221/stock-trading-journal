@@ -8,6 +8,13 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
   Table,
   TableHeader,
   TableBody,
@@ -21,7 +28,9 @@ export default function BucketDetailsPage() {
   const { id } = useParams();
   const router = useRouter();
   const [bucketSize, setBucketSize] = useState(0);
-  const [amount, setAmount] = useState(0);
+  const [adjustAmount, setAdjustAmount] = useState(0);
+  const [showAdjustModal, setShowAdjustModal] = useState(false);
+  const [adjustType, setAdjustType] = useState("deposit");
   const [available, setAvailable] = useState(0);
   const [locked, setLocked] = useState(0);
   const [wins, setWins] = useState(0);
@@ -97,49 +106,24 @@ export default function BucketDetailsPage() {
             <h1 className="text-3xl font-bold">{bucketName}</h1>
           </div>
 
-          {/* Bucket Size Adjuster */}
+          {/* Deposit/Withdraw Buttons */}
           <div className="mt-6 flex items-center space-x-2">
-            <Input
-              type="number"
-              value={amount}
-              onChange={(e) => setAmount(Number(e.target.value))}
-              placeholder="Amount"
-              className="w-32"
-            />
             <Button
-              onClick={async () => {
-                try {
-                  await axios.post(
-                    `/api/buckets/${id}`,
-                    { bucket_size: bucketSize + amount },
-                    { withCredentials: true }
-                  );
-                  setAmount(0);
-                  fetchBucket();
-                } catch (err) {
-                  console.error(err);
-                }
+              onClick={() => {
+                setAdjustType("deposit");
+                setShowAdjustModal(true);
               }}
             >
-              +
+              Deposit
             </Button>
             <Button
               variant="destructive"
-              onClick={async () => {
-                try {
-                  await axios.post(
-                    `/api/buckets/${id}`,
-                    { bucket_size: bucketSize - amount },
-                    { withCredentials: true }
-                  );
-                  setAmount(0);
-                  fetchBucket();
-                } catch (err) {
-                  console.error(err);
-                }
+              onClick={() => {
+                setAdjustType("withdraw");
+                setShowAdjustModal(true);
               }}
             >
-              -
+              Withdraw
             </Button>
           </div>
 
@@ -311,6 +295,54 @@ export default function BucketDetailsPage() {
           }}
           onCreate={handleCreate}
         />
+      )}
+
+      {showAdjustModal && (
+        <Dialog open onOpenChange={(open) => !open && setShowAdjustModal(false)}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>
+                {adjustType === "deposit" ? "Deposit Funds" : "Withdraw Funds"}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 mt-2">
+              <Input
+                type="number"
+                value={adjustAmount}
+                onChange={(e) => setAdjustAmount(Number(e.target.value))}
+                placeholder="Amount"
+              />
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowAdjustModal(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={async () => {
+                  try {
+                    await axios.post(
+                      `/api/buckets/${id}`,
+                      {
+                        bucket_size:
+                          adjustType === "deposit"
+                            ? bucketSize + adjustAmount
+                            : bucketSize - adjustAmount,
+                      },
+                      { withCredentials: true }
+                    );
+                    setAdjustAmount(0);
+                    setShowAdjustModal(false);
+                    fetchBucket();
+                  } catch (err) {
+                    console.error(err);
+                  }
+                }}
+              >
+                Confirm
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
