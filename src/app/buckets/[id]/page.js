@@ -108,7 +108,7 @@ export default function BucketDetailsPage() {
           </div>
 
           {/* Deposit/Withdraw Buttons */}
-          <div className="mt-6 flex items-center space-x-2">
+          <div className="mt-6 flex items-center justify-center space-x-2">
             <Button
               onClick={() => {
                 setAdjustType("deposit");
@@ -148,10 +148,6 @@ export default function BucketDetailsPage() {
               + Add Trade
             </Button>
             <Button onClick={handleTest}> Test Trade</Button>
-          </div>
-
-          {/* Delete Bucket Button */}
-          <div className="mt-auto flex justify-end">
             <Button
               variant="destructive"
               onClick={() => console.log("Bucket Deleted")}
@@ -312,7 +308,10 @@ export default function BucketDetailsPage() {
       )}
 
       {showAdjustModal && (
-        <Dialog open onOpenChange={(open) => !open && setShowAdjustModal(false)}>
+        <Dialog
+          open
+          onOpenChange={(open) => !open && setShowAdjustModal(false)}
+        >
           <DialogContent className="max-w-sm">
             <DialogHeader>
               <DialogTitle>
@@ -332,7 +331,10 @@ export default function BucketDetailsPage() {
               />
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowAdjustModal(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setShowAdjustModal(false)}
+              >
                 Cancel
               </Button>
               <Button
