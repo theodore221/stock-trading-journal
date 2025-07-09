@@ -3,17 +3,26 @@ import { verifyUserFromCookie } from "@/lib/authMiddleware";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
 export async function GET(request, { params }) {
-  const { id: bucketId } = await params;
+  const { id: bucketId } = params;
   const user = await verifyUserFromCookie(request);
 
-  const { data, error } = await supabaseAdmin
+  const { searchParams } = new URL(request.url);
+  const symbol = searchParams.get("symbol");
+  const status = searchParams.get("status");
+
+  let query = supabaseAdmin
     .from("trades")
     .select(
-      "id, symbol, notes, created_at, status, profit_loss, market, target, stop_loss, trade_entries(id, action, date_time, quantity, price, notes)"
+      "id, symbol, notes, created_at, status, profit_loss, market, target, stop_loss, date, quantity, price, exit_price, return_amount, return_percent"
     )
     .eq("bucket_id", bucketId)
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
+
+  if (symbol) query = query.eq("symbol", symbol);
+  if (status) query = query.eq("status", status);
+
+  const { data, error } = await query;
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -22,10 +31,18 @@ export async function GET(request, { params }) {
 }
 
 export async function POST(request, { params }) {
-  const { id: bucketId } = await params;
+  const { id: bucketId } = params;
   const user = await verifyUserFromCookie(request);
-  const { symbol, notes, market, target, stop_loss, entries } =
-    await request.json();
+  const {
+    symbol,
+    notes,
+    market,
+    target,
+    stop_loss,
+    date,
+    quantity,
+    price,
+  } = await request.json();
 
   const { data: trade, error } = await supabaseAdmin
     .from("trades")
@@ -38,6 +55,10 @@ export async function POST(request, { params }) {
         market,
         target,
         stop_loss,
+        date,
+        quantity,
+        price,
+        status: "OPEN",
       },
     ])
     .select()
@@ -45,20 +66,6 @@ export async function POST(request, { params }) {
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  if (entries && Array.isArray(entries) && entries.length > 0) {
-    const entriesData = entries.map((e) => ({ ...e, trade_id: trade.id }));
-    const { error: entriesError } = await supabaseAdmin
-      .from("trade_entries")
-      .insert(entriesData);
-
-    if (entriesError) {
-      return NextResponse.json(
-        { error: entriesError.message },
-        { status: 500 }
-      );
-    }
   }
 
   return NextResponse.json(trade, { status: 201 });

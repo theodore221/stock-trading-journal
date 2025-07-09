@@ -25,6 +25,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import AddTradeForm from "@/components/trades/AddTradeForm";
+import SellTradeForm from "@/components/trades/SellTradeForm";
 
 export default function BucketDetailsPage() {
   const { id } = useParams();
@@ -46,6 +47,7 @@ export default function BucketDetailsPage() {
   const [transactions, setTransactions] = useState([]);
   const [bucketName, setBucketName] = useState("");
   const [showTradeForm, setShowTradeForm] = useState(false);
+  const [showSellForm, setShowSellForm] = useState(false);
   const [editingTrade, setEditingTrade] = useState(null);
   const [testData, setTestData] = useState({});
 
@@ -72,23 +74,18 @@ export default function BucketDetailsPage() {
       let computedCash = data.bucket_size || 0;
       let computedPos = 0;
       (data.trades || []).forEach((t) => {
-        (t.trade_entries || []).forEach((e) => {
-          const value = Number(e.quantity) * Number(e.price);
-          if (e.action === "BUY") {
-            computedCash -= value;
-            computedPos += value;
-          } else if (e.action === "SELL") {
-            computedCash += value;
-            computedPos -= value;
-          }
-        });
+        if (t.status !== "CLOSED") {
+          const value = Number(t.quantity) * Number(t.price);
+          computedCash -= value;
+          computedPos += value;
+        }
       });
       if (computedCash < 0) computedCash = 0;
       if (computedCash > (data.bucket_size || 0)) computedCash = data.bucket_size || 0;
       setCash(computedCash);
       setPosition(computedPos);
-      setOpenTrades((data.trades || []).length);
-      setClosedTrades(0);
+      setOpenTrades((data.trades || []).filter((t) => t.status !== "CLOSED").length);
+      setClosedTrades((data.trades || []).filter((t) => t.status === "CLOSED").length);
       setWins(0);
       setLosses(0);
       setAvgWin(0);
@@ -174,6 +171,13 @@ export default function BucketDetailsPage() {
               }}
             >
               + Add Trade
+            </Button>
+            <Button
+              onClick={() => {
+                setShowSellForm(true);
+              }}
+            >
+              Sell Trade
             </Button>
             <Button onClick={handleTest}> Test Trade</Button>
             <Button
@@ -327,25 +331,13 @@ export default function BucketDetailsPage() {
                     </TableCell>
                     <TableCell>{t.symbol || ""}</TableCell>
                     <TableCell>{t.status || ""}</TableCell>
-                    <TableCell>{t.trade_entries.length}</TableCell>
-                    <TableCell>
-                      {(
-                        t.trade_entries?.reduce((result, i) => {
-                          if (i.action === "BUY") {
-                            return result + i.price * i.quantity;
-                          }
-                          return result;
-                        }, 0) /
-                        t.trade_entries.filter((i) => {
-                          return i.action === "BUY";
-                        }).length
-                      ).toFixed(2) ?? ""}
-                    </TableCell>
-                    <TableCell>{t.exitPrice || ""}</TableCell>
+                    <TableCell>{t.quantity}</TableCell>
+                    <TableCell>{Number(t.price).toFixed(2)}</TableCell>
+                    <TableCell>{t.exit_price ?? ""}</TableCell>
                     <TableCell>{t.holdDuration || "2 Days"}</TableCell>
-                    <TableCell>{t.returnAmount || ""}</TableCell>
+                    <TableCell>{t.return_amount ?? ""}</TableCell>
                     <TableCell>
-                      {t.returnPercent ? `${t.returnPercent}%` : ""}
+                      {t.return_percent ? `${t.return_percent}%` : ""}
                     </TableCell>
                     <TableCell className="space-x-1">
                       <Button
@@ -381,6 +373,14 @@ export default function BucketDetailsPage() {
             setEditingTrade(null);
           }}
           onCreate={handleCreate}
+        />
+      )}
+
+      {showSellForm && (
+        <SellTradeForm
+          bucketId={id}
+          onClose={() => setShowSellForm(false)}
+          onSold={handleCreate}
         />
       )}
 
