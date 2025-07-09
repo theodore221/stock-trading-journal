@@ -31,7 +31,7 @@ export async function GET(request, { params }) {
 
     const { data: transactions, error: txErr } = await supabaseAdmin
       .from("bucket_transactions")
-      .select("id, amount, created_at")
+      .select("id, amount, description, qty, price, created_at")
       .eq("bucket_id", bucketId)
       .eq("user_id", user.id)
       .order("created_at", { ascending: true });
@@ -76,7 +76,12 @@ export async function POST(request, { params }) {
 
     if (delta !== 0) {
       await supabaseAdmin.from("bucket_transactions").insert([
-        { bucket_id: bucketId, user_id: user.id, amount: delta },
+        {
+          bucket_id: bucketId,
+          user_id: user.id,
+          amount: delta,
+          description: delta > 0 ? "Deposit" : "Withdraw",
+        },
       ]);
     }
 

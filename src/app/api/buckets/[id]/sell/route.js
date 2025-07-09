@@ -15,7 +15,7 @@ export async function POST(request, { params }) {
     const { trade_id, qty } = alloc;
     const { data: trade, error } = await supabaseAdmin
       .from("trades")
-      .select("quantity, price")
+      .select("quantity, price, symbol")
       .eq("id", trade_id)
       .eq("bucket_id", bucketId)
       .eq("user_id", user.id)
@@ -37,6 +37,17 @@ export async function POST(request, { params }) {
       .eq("id", trade_id)
       .eq("bucket_id", bucketId)
       .eq("user_id", user.id);
+
+    await supabaseAdmin.from("bucket_transactions").insert([
+      {
+        bucket_id: bucketId,
+        user_id: user.id,
+        amount: Number(price) * Number(qty),
+        description: `${trade.symbol} - SELL`,
+        qty,
+        price,
+      },
+    ]);
   }
 
   return NextResponse.json({ message: "Trades updated" });

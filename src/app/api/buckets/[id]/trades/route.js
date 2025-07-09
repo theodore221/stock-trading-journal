@@ -68,5 +68,17 @@ export async function POST(request, { params }) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+  const tradeAmount = -Number(price) * Number(quantity);
+  await supabaseAdmin.from("bucket_transactions").insert([
+    {
+      bucket_id: bucketId,
+      user_id: user.id,
+      amount: tradeAmount,
+      description: `${symbol} - BUY`,
+      qty: quantity,
+      price,
+    },
+  ]);
+
   return NextResponse.json(trade, { status: 201 });
 }

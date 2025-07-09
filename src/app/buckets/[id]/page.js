@@ -271,6 +271,8 @@ export default function BucketDetailsPage() {
                   <TableRow>
                     <TableHead>Date</TableHead>
                     <TableHead>Description</TableHead>
+                    <TableHead>Qty</TableHead>
+                    <TableHead>Price ($)</TableHead>
                     <TableHead>Change ($)</TableHead>
                     <TableHead>Balance ($)</TableHead>
                   </TableRow>
@@ -284,11 +286,19 @@ export default function BucketDetailsPage() {
                           : "-"}
                       </TableCell>
                       <TableCell>
-                        {idx === 0
+                        {tx.description
+                          ? tx.description
+                          : idx === 0
                           ? "Initial Bucket Size"
                           : tx.amount > 0
                           ? "Deposit"
                           : "Withdraw"}
+                      </TableCell>
+                      <TableCell>{tx.qty ?? ""}</TableCell>
+                      <TableCell>
+                        {tx.price !== null && tx.price !== undefined
+                          ? Number(tx.price).toFixed(2)
+                          : ""}
                       </TableCell>
                       <TableCell
                         className={

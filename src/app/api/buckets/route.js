@@ -42,7 +42,12 @@ export async function POST(request) {
 
     if (bucket_size) {
       await supabaseAdmin.from("bucket_transactions").insert([
-        { bucket_id: data.id, user_id: user.id, amount: bucket_size },
+        {
+          bucket_id: data.id,
+          user_id: user.id,
+          amount: bucket_size,
+          description: "Initial Deposit",
+        },
       ]);
     }
 

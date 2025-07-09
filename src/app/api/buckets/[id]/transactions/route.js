@@ -8,7 +8,7 @@ export async function GET(request, { params }) {
     const bucketId = params.id;
     const { data, error } = await supabaseAdmin
       .from("bucket_transactions")
-      .select("id, amount, created_at")
+      .select("id, amount, description, qty, price, created_at")
       .eq("bucket_id", bucketId)
       .eq("user_id", user.id)
       .order("created_at", { ascending: true });
@@ -25,10 +25,20 @@ export async function POST(request, { params }) {
   try {
     const user = await verifyUserFromCookie(request);
     const bucketId = params.id;
-    const { amount } = await request.json();
+    const { amount, description = null, qty = null, price = null } =
+      await request.json();
     const { data, error } = await supabaseAdmin
       .from("bucket_transactions")
-      .insert([{ bucket_id: bucketId, user_id: user.id, amount }])
+      .insert([
+        {
+          bucket_id: bucketId,
+          user_id: user.id,
+          amount,
+          description,
+          qty,
+          price,
+        },
+      ])
       .select()
       .single();
     if (error) {
