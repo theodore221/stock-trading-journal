@@ -24,6 +24,12 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table";
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "@/components/ui/tabs";
 import AddTradeForm from "@/components/trades/AddTradeForm";
 import SellTradeForm from "@/components/trades/SellTradeForm";
 
@@ -253,113 +259,116 @@ export default function BucketDetailsPage() {
             ))}
           </div>
 
-          {/* Bucket Activity Table */}
-          <div className="overflow-auto">
-            <h2 className="font-semibold mb-2">Bucket Activity</h2>
-            <Table className="min-w-full">
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Change ($)</TableHead>
-                  <TableHead>Balance ($)</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {transactionRows.map((tx, idx) => (
-                  <TableRow key={tx.id ?? idx}>
-                    <TableCell>
-                      {tx.created_at
-                        ? new Date(tx.created_at).toLocaleDateString("en-GB")
-                        : "-"}
-                    </TableCell>
-                    <TableCell>
-                      {idx === 0
-                        ? "Initial Bucket Size"
-                        : tx.amount > 0
-                        ? "Deposit"
-                        : "Withdraw"}
-                    </TableCell>
-                    <TableCell
-                      className={
-                        tx.amount >= 0 ? "text-green-600" : "text-red-600"
-                      }
-                    >
-                      {tx.amount >= 0
-                        ? `+$${Number(tx.amount).toLocaleString()}`
-                        : `-$${Math.abs(Number(tx.amount)).toLocaleString()}`}
-                    </TableCell>
-                    <TableCell>{`$${Number(tx.balance).toLocaleString()}`}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+          <Tabs defaultValue="activity" className="w-full">
+            <TabsList className="mb-2">
+              <TabsTrigger value="activity">Bucket Activity</TabsTrigger>
+              <TabsTrigger value="trades">Trades</TabsTrigger>
+            </TabsList>
 
-          {/* Trades Table */}
-          <div className="overflow-auto min-h-[19rem]">
-            <Table className="min-w-full">
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Symbol</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Qty</TableHead>
-                  <TableHead>Entry ($)</TableHead>
-                  <TableHead>Exit ($)</TableHead>
-                  {/* Removed Ent Total and Ext Total columns */}
-                  <TableHead>Hold</TableHead>
-                  <TableHead>Return ($)</TableHead>
-                  <TableHead>Return %</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {trades.map((t) => (
-                  <TableRow
-                    key={t.id}
-                    className="cursor-pointer"
-                    onClick={() => {
-                      setEditingTrade(t);
-                      setShowTradeForm(true);
-                    }}
-                  >
-                    <TableCell>
-                      {t?.created_at
-                        ? new Date(t.created_at).toLocaleDateString("en-GB")
-                        : "-"}
-                    </TableCell>
-                    <TableCell>{t.symbol || ""}</TableCell>
-                    <TableCell>{t.status || ""}</TableCell>
-                    <TableCell>{t.quantity}</TableCell>
-                    <TableCell>{Number(t.price).toFixed(2)}</TableCell>
-                    <TableCell>{t.exit_price ?? ""}</TableCell>
-                    <TableCell>{t.holdDuration || "2 Days"}</TableCell>
-                    <TableCell>{t.return_amount ?? ""}</TableCell>
-                    <TableCell>
-                      {t.return_percent ? `${t.return_percent}%` : ""}
-                    </TableCell>
-                    <TableCell className="space-x-1">
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        Sell
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <Trash className="size-4" />
-                      </Button>
-                    </TableCell>
+            <TabsContent value="activity" className="overflow-auto">
+              <Table className="min-w-full">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Change ($)</TableHead>
+                    <TableHead>Balance ($)</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+                </TableHeader>
+                <TableBody>
+                  {transactionRows.map((tx, idx) => (
+                    <TableRow key={tx.id ?? idx}>
+                      <TableCell>
+                        {tx.created_at
+                          ? new Date(tx.created_at).toLocaleDateString("en-GB")
+                          : "-"}
+                      </TableCell>
+                      <TableCell>
+                        {idx === 0
+                          ? "Initial Bucket Size"
+                          : tx.amount > 0
+                          ? "Deposit"
+                          : "Withdraw"}
+                      </TableCell>
+                      <TableCell
+                        className={
+                          tx.amount >= 0 ? "text-green-600" : "text-red-600"
+                        }
+                      >
+                        {tx.amount >= 0
+                          ? `+$${Number(tx.amount).toLocaleString()}`
+                          : `-$${Math.abs(Number(tx.amount)).toLocaleString()}`}
+                      </TableCell>
+                      <TableCell>{`$${Number(tx.balance).toLocaleString()}`}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TabsContent>
+
+            <TabsContent value="trades" className="overflow-auto min-h-[19rem]">
+              <Table className="min-w-full">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Symbol</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Qty</TableHead>
+                    <TableHead>Entry ($)</TableHead>
+                    <TableHead>Exit ($)</TableHead>
+                    <TableHead>Hold</TableHead>
+                    <TableHead>Return ($)</TableHead>
+                    <TableHead>Return %</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {trades.map((t) => (
+                    <TableRow
+                      key={t.id}
+                      className="cursor-pointer"
+                      onClick={() => {
+                        setEditingTrade(t);
+                        setShowTradeForm(true);
+                      }}
+                    >
+                      <TableCell>
+                        {t?.created_at
+                          ? new Date(t.created_at).toLocaleDateString("en-GB")
+                          : "-"}
+                      </TableCell>
+                      <TableCell>{t.symbol || ""}</TableCell>
+                      <TableCell>{t.status || ""}</TableCell>
+                      <TableCell>{t.quantity}</TableCell>
+                      <TableCell>{Number(t.price).toFixed(2)}</TableCell>
+                      <TableCell>{t.exit_price ?? ""}</TableCell>
+                      <TableCell>{t.holdDuration || "2 Days"}</TableCell>
+                      <TableCell>{t.return_amount ?? ""}</TableCell>
+                      <TableCell>
+                        {t.return_percent ? `${t.return_percent}%` : ""}
+                      </TableCell>
+                      <TableCell className="space-x-1">
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          Sell
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Trash className="size-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
 
