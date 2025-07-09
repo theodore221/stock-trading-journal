@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -19,9 +18,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Button } from "@/components/ui/button";
-import { Plus, X } from "lucide-react";
 import {
   Slider,
   SliderTrack,
@@ -31,41 +28,23 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import axios from "axios";
 
-const AddTradeForm = ({ bucketId, trade = null, onClose, onCreate, cash = 0 }) => {
-  const [lines, setLines] = useState(() =>
-    trade?.trade_entries?.length
-      ? trade.trade_entries.map((e) => ({
-          action: e.action,
-          datetime: e.date_time?.slice(0, 16) || "",
-          quantity: e.quantity,
-          price: e.price,
-        }))
-      : [
-          {
-            action: "BUY",
-            datetime: new Date().toISOString().slice(0, 16),
-            quantity: 0,
-            price: 0,
-          },
-        ]
-  );
-
-  // General meta-fields
+const AddTradeForm = ({ bucketId, trade = null, onClose, onCreate }) => {
+  // General fields
   const [market, setMarket] = useState(trade?.market || "");
   const [symbol, setSymbol] = useState(trade?.symbol || "");
   const [target, setTarget] = useState(trade?.target || "");
   const [stopLoss, setStopLoss] = useState(trade?.stop_loss || "");
+  const [date, setDate] = useState(
+    trade?.date ? trade.date.slice(0, 16) : new Date().toISOString().slice(0, 16)
+  );
+  const [quantity, setQuantity] = useState(trade?.quantity || 0);
+  const [price, setPrice] = useState(trade?.price || 0);
 
   // Journal fields
   const [tags, setTags] = useState(trade?.tags || []);
   const [notes, setNotes] = useState(trade?.notes || "");
   const [confidence, setConfidence] = useState(trade?.confidence || 0);
-  const [errors, setErrors] = useState({
-    symbol: false,
-    lines: [],
-    lineGlobal: false,
-  });
-  const [cashError, setCashError] = useState(false);
+  const [errors, setErrors] = useState({ symbol: false, quantity: false, price: false });
 
   useEffect(() => {
     if (trade) {
@@ -73,97 +52,44 @@ const AddTradeForm = ({ bucketId, trade = null, onClose, onCreate, cash = 0 }) =
       setSymbol(trade.symbol || "");
       setTarget(trade.target || "");
       setStopLoss(trade.stop_loss || "");
+      setDate(trade.date ? trade.date.slice(0, 16) : new Date().toISOString().slice(0, 16));
+      setQuantity(trade.quantity || 0);
+      setPrice(trade.price || 0);
       setTags(trade.tags || []);
       setNotes(trade.notes || "");
       setConfidence(trade.confidence || 0);
-      setLines(
-        trade.trade_entries?.map((e) => ({
-          action: e.action,
-          datetime: e.date_time?.slice(0, 16) || "",
-          quantity: e.quantity,
-          price: e.price,
-        })) || []
-      );
     }
   }, [trade]);
-
-  const addLine = () => {
-    setLines([
-      ...lines,
-      {
-        action: "BUY",
-        datetime: new Date().toISOString().slice(0, 16),
-        quantity: 0,
-        price: 0,
-        fee: 0,
-      },
-    ]);
-  };
-
-  const removeLine = (index) => {
-    setLines(lines.filter((_, i) => i !== index));
-  };
-
-  const updateLine = (index, field, value) => {
-    const updated = [...lines];
-    updated[index] = { ...updated[index], [field]: value };
-    setLines(updated);
-  };
 
   const onSubmit = async (e) => {
     e.preventDefault();
     const symbolError = !symbol.trim();
-    const lineErrors = lines.map((l) => ({
-      quantity: Number(l.quantity) <= 0,
-      price: Number(l.price) <= 0,
-    }));
-    const hasValidLine = lines.some(
-      (l) => Number(l.quantity) > 0 && Number(l.price) > 0
-    );
-    const lineGlobal = !hasValidLine;
-    if (symbolError || lineGlobal) {
-      setErrors({ symbol: symbolError, lines: lineErrors, lineGlobal });
+    const qtyError = Number(quantity) <= 0;
+    const priceError = Number(price) <= 0;
+    if (symbolError || qtyError || priceError) {
+      setErrors({ symbol: symbolError, quantity: qtyError, price: priceError });
       return;
     }
-    setErrors({ symbol: false, lines: [], lineGlobal: false });
+    setErrors({ symbol: false, quantity: false, price: false });
 
-    // Calculate total cost of BUY lines to ensure sufficient cash
-    const buyCost = lines.reduce((sum, l) => {
-      if (l.action === "BUY") {
-        return sum + Number(l.quantity) * Number(l.price);
-      }
-      return sum;
-    }, 0);
+    const payload = {
+      symbol,
+      market,
+      target,
+      stop_loss: stopLoss,
+      date,
+      quantity: Number(quantity),
+      price: Number(price),
+      notes,
+      tags,
+      confidence,
+    };
 
-    if (buyCost > cash) {
-      setCashError(true);
-      return;
-    }
-
-    setCashError(false);
     try {
-      const payload = {
-        symbol,
-        market,
-        target,
-        stop_loss: stopLoss,
-        entries: lines.map((l) => ({
-          action: l.action,
-          date_time: l.datetime,
-          quantity: l.quantity,
-          price: l.price,
-        })),
-        notes,
-        tags,
-        confidence,
-      };
-
       if (trade?.id) {
-        await axios.put(
-          `/api/buckets/${bucketId}/trades/${trade.id}`,
-          payload,
-          { withCredentials: true }
-        );
+        await axios.put(`/api/buckets/${bucketId}/trades/${trade.id}`, payload, {
+          withCredentials: true,
+        });
       } else {
         await axios.post(`/api/buckets/${bucketId}/trades`, payload, {
           withCredentials: true,
@@ -199,9 +125,7 @@ const AddTradeForm = ({ bucketId, trade = null, onClose, onCreate, cash = 0 }) =
                 <DialogTitle className="my-2">
                   {trade ? "Edit Trade" : "New Trade"}
                 </DialogTitle>
-                <DialogDescription>
-                  Enter descriptions of your trade
-                </DialogDescription>
+                <DialogDescription>Enter descriptions of your trade</DialogDescription>
               </div>
 
               <TabsList>
@@ -212,9 +136,7 @@ const AddTradeForm = ({ bucketId, trade = null, onClose, onCreate, cash = 0 }) =
           </DialogHeader>
 
           <form onSubmit={onSubmit} className="space-y-6">
-            {/* ─── GENERAL TAB ─── */}
             <TabsContent value="general" className="space-y-4">
-              {/* Market / Symbol / Target / Stop-Loss */}
               <div className="grid grid-cols-4 gap-3">
                 <div>
                   <Label htmlFor="market" className="mb-2">
@@ -229,7 +151,6 @@ const AddTradeForm = ({ bucketId, trade = null, onClose, onCreate, cash = 0 }) =
                       <SelectItem value="FOREX">FOREX</SelectItem>
                       <SelectItem value="DERIVATIVE">DERIVATIVE</SelectItem>
                       <SelectItem value="EQUITY">EQUITY</SelectItem>
-                      {/* ...more */}
                     </SelectContent>
                   </Select>
                 </div>
@@ -245,9 +166,7 @@ const AddTradeForm = ({ bucketId, trade = null, onClose, onCreate, cash = 0 }) =
                     aria-invalid={errors.symbol}
                   />
                   {errors.symbol && (
-                    <p className="text-destructive text-sm mt-1">
-                      Symbol required
-                    </p>
+                    <p className="text-destructive text-sm mt-1">Symbol required</p>
                   )}
                 </div>
                 <div>
@@ -276,142 +195,68 @@ const AddTradeForm = ({ bucketId, trade = null, onClose, onCreate, cash = 0 }) =
                 </div>
               </div>
 
-              {/* Trade Lines with Header */}
-              <div className="space-y-2 mt-6">
-                {/* Header Row */}
-                <div className="flex items-center space-x-2 px-2 text-sm font-medium text-muted-foreground">
-                  <div className="w-10" /> {/* for the remove-button space */}
-                  <div className="w-16">Action</div>
-                  <div className="w-[200px]">Date/Time</div>
-                  <div className="w-24 text-right">Quantity</div>
-                  <div className="w-24 text-right">Price</div>
+              <div className="grid grid-cols-3 gap-3 mt-6">
+                <div>
+                  <Label htmlFor="date" className="mb-2">
+                    Date
+                  </Label>
+                  <Input
+                    id="date"
+                    type="datetime-local"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                  />
                 </div>
-
-                {lines.map((line, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center space-x-2 px-2 py-1 rounded"
-                  >
-                    <Button
-                      type="button"
-                      size="icon"
-                      onClick={() => removeLine(idx)}
-                      className="bg-gray-200 text-gray-700 hover:bg-gray-300"
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-
-                    {/* remove the X/delete button, inputs, etc. */}
-                    <Button
-                      type="button"
-                      size="sm"
-                      onClick={() =>
-                        updateLine(
-                          idx,
-                          "action",
-                          line.action === "BUY" ? "SELL" : "BUY"
-                        )
-                      }
-                      className={`px-3 py-1 rounded-full ${
-                        line.action === "BUY"
-                          ? "bg-green-500 text-white"
-                          : "bg-red-500 text-white"
-                      }`}
-                    >
-                      {line.action}
-                    </Button>
-
-                    {/* now your datetime, qty, price inputs come after */}
-                    <Input
-                      type="datetime-local"
-                      value={line.datetime}
-                      onChange={(e) =>
-                        updateLine(idx, "datetime", e.target.value)
-                      }
-                      className="max-w-[200px]"
-                    />
-                    <div className="flex flex-col w-24 text-right">
-                      <Input
-                        type="number"
-                        value={line.quantity}
-                        placeholder="Qty"
-                        onChange={(e) =>
-                          updateLine(idx, "quantity", Number(e.target.value))
-                        }
-                        aria-invalid={
-                          errors.lines[idx]?.quantity && errors.lineGlobal
-                        }
-                      />
-                      {errors.lines[idx]?.quantity && errors.lineGlobal && (
-                        <p className="text-destructive text-xs mt-1">
-                          Qty required
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex flex-col w-24 text-right">
-                      <Input
-                        type="number"
-                        value={line.price}
-                        placeholder="Price"
-                        onChange={(e) =>
-                          updateLine(idx, "price", Number(e.target.value))
-                        }
-                        aria-invalid={
-                          errors.lines[idx]?.price && errors.lineGlobal
-                        }
-                      />
-                      {errors.lines[idx]?.price && errors.lineGlobal && (
-                        <p className="text-destructive text-xs mt-1">
-                          Price required
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                ))}
-
-                {/* Centered Add-Line Button */}
-                <div className="flex justify-center mt-2 px-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={addLine}
-                    className="w-8 h-8 p-0"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
+                <div>
+                  <Label htmlFor="quantity" className="mb-2">
+                    Quantity
+                  </Label>
+                  <Input
+                    id="quantity"
+                    type="number"
+                    value={quantity}
+                    onChange={(e) => setQuantity(e.target.value)}
+                    aria-invalid={errors.quantity}
+                  />
+                  {errors.quantity && (
+                    <p className="text-destructive text-sm mt-1">Qty required</p>
+                  )}
                 </div>
-                {errors.lineGlobal && (
-                  <p className="text-destructive text-sm px-2">
-                    Enter quantity and price for at least one trade line
-                  </p>
-                )}
+                <div>
+                  <Label htmlFor="price" className="mb-2">
+                    Price
+                  </Label>
+                  <Input
+                    id="price"
+                    type="number"
+                    step="0.01"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    aria-invalid={errors.price}
+                  />
+                  {errors.price && (
+                    <p className="text-destructive text-sm mt-1">Price required</p>
+                  )}
+                </div>
               </div>
             </TabsContent>
 
-            {/* ─── JOURNAL TAB ─── */}
             <TabsContent value="journal" className="space-y-4">
-              {/* Tags */}
               <div>
                 <Label htmlFor="tags" className="mb-2">
                   Tags
                 </Label>
-                <Select
-                  multiple
-                  onValueChange={(vals) => setTags(vals)}
-                  value={tags}
-                >
+                <Select multiple onValueChange={(vals) => setTags(vals)} value={tags}>
                   <SelectTrigger id="tags">
                     <SelectValue placeholder="Select tags" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="research">Research</SelectItem>
                     <SelectItem value="entry">Entry</SelectItem>
-                    {/* ...more */}
                   </SelectContent>
                 </Select>
               </div>
 
-              {/* Notes */}
               <div>
                 <Label htmlFor="notes" className="mb-2">
                   Notes
@@ -425,7 +270,6 @@ const AddTradeForm = ({ bucketId, trade = null, onClose, onCreate, cash = 0 }) =
                 />
               </div>
 
-              {/* Confidence Slider */}
               <div>
                 <Label className="mb-4">Confidence: {confidence}</Label>
                 <Slider
@@ -440,30 +284,13 @@ const AddTradeForm = ({ bucketId, trade = null, onClose, onCreate, cash = 0 }) =
                   <SliderThumb />
                 </Slider>
               </div>
-
-              {/* Upload Screenshots */}
-              <div>
-                <Label className="mb-2">Upload screenshots</Label>
-                <div className="border-dashed border rounded-lg p-4 text-center">
-                  <Input type="file" accept="image/*" multiple />
-                </div>
-              </div>
             </TabsContent>
 
             <div className="flex justify-between mt-4">
               {trade?.id && (
-                <Button
-                  type="button"
-                  variant="destructive"
-                  onClick={handleDelete}
-                >
+                <Button type="button" variant="destructive" onClick={handleDelete}>
                   Delete
                 </Button>
-              )}
-              {cashError && (
-                <p className="text-destructive mr-auto self-center">
-                  Insufficient cash in bucket
-                </p>
               )}
               <Button type="submit" className="ml-auto">
                 Save
