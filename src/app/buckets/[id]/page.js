@@ -51,6 +51,7 @@ export default function BucketDetailsPage() {
   const [showSellForm, setShowSellForm] = useState(false);
   const [editingTrade, setEditingTrade] = useState(null);
   const [testData, setTestData] = useState({});
+  const [adjustError, setAdjustError] = useState("");
 
   const transactionRows = useMemo(() => {
     let balance = 0;
@@ -135,6 +136,8 @@ export default function BucketDetailsPage() {
             <Button
               onClick={() => {
                 setAdjustType("deposit");
+                setAdjustAmount(0);
+                setAdjustError("");
                 setShowAdjustModal(true);
               }}
             >
@@ -144,6 +147,8 @@ export default function BucketDetailsPage() {
               variant="destructive"
               onClick={() => {
                 setAdjustType("withdraw");
+                setAdjustAmount(0);
+                setAdjustError("");
                 setShowAdjustModal(true);
               }}
             >
@@ -431,27 +436,38 @@ export default function BucketDetailsPage() {
                 {adjustType === "deposit" ? "Deposit Funds" : "Withdraw Funds"}
               </DialogTitle>
             </DialogHeader>
-            <div className="grid gap-2 mt-2">
-              <Label htmlFor="adjust-amount">$ Amount</Label>
-              <Input
-                id="adjust-amount"
-                type="number"
-                step="0.01"
-                inputMode="decimal"
-                value={adjustAmount}
-                onChange={(e) => setAdjustAmount(parseFloat(e.target.value))}
-                placeholder="0.00"
-              />
-            </div>
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setShowAdjustModal(false)}
+          <div className="grid gap-2 mt-2">
+            <Label htmlFor="adjust-amount">$ Amount</Label>
+            <Input
+              id="adjust-amount"
+              type="number"
+              step="0.01"
+              inputMode="decimal"
+              value={adjustAmount}
+              onChange={(e) => {
+                setAdjustAmount(parseFloat(e.target.value));
+                setAdjustError("");
+              }}
+              placeholder="0.00"
+              aria-invalid={adjustError ? true : false}
+            />
+            {adjustError && (
+              <p className="text-destructive text-sm mt-1">{adjustError}</p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowAdjustModal(false)}
               >
                 Cancel
               </Button>
               <Button
                 onClick={async () => {
+                  if (adjustType === "withdraw" && adjustAmount > cash) {
+                    setAdjustError("Insufficient available cash");
+                    return;
+                  }
                   try {
                     await axios.post(
                       `/api/buckets/${id}`,
