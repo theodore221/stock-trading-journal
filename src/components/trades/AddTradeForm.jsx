@@ -28,7 +28,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import axios from "axios";
 
-const AddTradeForm = ({ bucketId, trade = null, onClose, onCreate }) => {
+const AddTradeForm = ({ bucketId, trade = null, cash = 0, onClose, onCreate }) => {
   // General fields
   const [market, setMarket] = useState(trade?.market || "");
   const [symbol, setSymbol] = useState(trade?.symbol || "");
@@ -45,6 +45,8 @@ const AddTradeForm = ({ bucketId, trade = null, onClose, onCreate }) => {
   const [notes, setNotes] = useState(trade?.notes || "");
   const [confidence, setConfidence] = useState(trade?.confidence || 0);
   const [errors, setErrors] = useState({ symbol: false, quantity: false, price: false });
+  const [cashError, setCashError] = useState("");
+  const [cashErrorField, setCashErrorField] = useState(null);
 
   useEffect(() => {
     if (trade) {
@@ -71,6 +73,21 @@ const AddTradeForm = ({ bucketId, trade = null, onClose, onCreate }) => {
       return;
     }
     setErrors({ symbol: false, quantity: false, price: false });
+
+    const numPrice = Number(price);
+    const numQty = Number(quantity);
+    const totalCost = numPrice * numQty;
+    if (totalCost > cash) {
+      if (numQty > cash / (numPrice || 1)) {
+        setCashErrorField("quantity");
+      } else {
+        setCashErrorField("price");
+      }
+      setCashError("Insufficient available cash");
+      return;
+    }
+    setCashErrorField(null);
+    setCashError("");
 
     const payload = {
       symbol,
@@ -215,11 +232,18 @@ const AddTradeForm = ({ bucketId, trade = null, onClose, onCreate }) => {
                     id="quantity"
                     type="number"
                     value={quantity}
-                    onChange={(e) => setQuantity(e.target.value)}
+                    onChange={(e) => {
+                      setQuantity(e.target.value);
+                      setCashError("");
+                      setCashErrorField(null);
+                    }}
                     aria-invalid={errors.quantity}
                   />
                   {errors.quantity && (
                     <p className="text-destructive text-sm mt-1">Qty required</p>
+                  )}
+                  {cashError && cashErrorField === "quantity" && (
+                    <p className="text-destructive text-sm mt-1">{cashError}</p>
                   )}
                 </div>
                 <div>
@@ -231,11 +255,18 @@ const AddTradeForm = ({ bucketId, trade = null, onClose, onCreate }) => {
                     type="number"
                     step="0.01"
                     value={price}
-                    onChange={(e) => setPrice(e.target.value)}
+                    onChange={(e) => {
+                      setPrice(e.target.value);
+                      setCashError("");
+                      setCashErrorField(null);
+                    }}
                     aria-invalid={errors.price}
                   />
                   {errors.price && (
                     <p className="text-destructive text-sm mt-1">Price required</p>
+                  )}
+                  {cashError && cashErrorField === "price" && (
+                    <p className="text-destructive text-sm mt-1">{cashError}</p>
                   )}
                 </div>
               </div>

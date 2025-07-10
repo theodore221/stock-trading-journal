@@ -1,6 +1,7 @@
 import { verifyUserFromCookie } from "@/lib/authMiddleware";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 import { NextResponse } from "next/server";
+import { calculateAvailableCash } from "@/lib/bucketUtils";
 
 export async function GET(request, { params }) {
   try {
@@ -61,6 +62,20 @@ export async function POST(request, { params }) {
     }
 
     const delta = bucket_size - (current?.bucket_size || 0);
+
+    if (delta < 0) {
+      const availableCash = await calculateAvailableCash(
+        supabaseAdmin,
+        bucketId,
+        user.id
+      );
+      if (availableCash < Math.abs(delta)) {
+        return NextResponse.json(
+          { error: "Insufficient cash to withdraw" },
+          { status: 400 }
+        );
+      }
+    }
 
     const { data, error } = await supabaseAdmin
       .from("buckets")

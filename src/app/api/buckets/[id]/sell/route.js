@@ -24,14 +24,14 @@ export async function POST(request, { params }) {
     if (error || !trade) continue;
 
     const sellQty = Number(qty);
+    if (sellQty <= 0 || sellQty > Number(trade.quantity)) continue;
     const remaining = Number(trade.quantity) - sellQty;
     const updates = { quantity: remaining };
     if (remaining <= 0) {
       updates.status = "CLOSED";
       updates.exit_price = price;
       updates.return_amount = (price - trade.price) * Number(trade.quantity);
-      updates.return_percent =
-        ((price - trade.price) / trade.price) * 100;
+      updates.return_percent = ((price - trade.price) / trade.price) * 100;
     }
     await supabaseAdmin
       .from("trades")
