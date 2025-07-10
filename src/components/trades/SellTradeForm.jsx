@@ -33,6 +33,7 @@ const SellTradeForm = ({ bucketId, onClose, onSold }) => {
   const [price, setPrice] = useState(0);
   const [openTrades, setOpenTrades] = useState([]);
   const [allocations, setAllocations] = useState({});
+  const [searched, setSearched] = useState(false);
 
   const fetchTrades = async () => {
     try {
@@ -46,6 +47,7 @@ const SellTradeForm = ({ bucketId, onClose, onSold }) => {
         map[t.id] = 0;
       });
       setAllocations(map);
+      setSearched(true);
     } catch (err) {
       console.error(err);
     }
@@ -127,7 +129,10 @@ const SellTradeForm = ({ bucketId, onClose, onSold }) => {
                       id="symbol"
                       placeholder="e.g. SOXL"
                       value={symbol}
-                      onChange={(e) => setSymbol(e.target.value)}
+                      onChange={(e) => {
+                        setSymbol(e.target.value);
+                        setSearched(false);
+                      }}
                     />
                     <Button type="button" size="icon" onClick={fetchTrades}>
                       <Search className="h-4 w-4" />
@@ -197,43 +202,56 @@ const SellTradeForm = ({ bucketId, onClose, onSold }) => {
                 </div>
               </div>
 
-              {openTrades.length > 0 && (
-                <div className="mt-4 space-y-2">
-                  {openTrades.map((t) => (
-                    <div
-                      key={t.id}
-                      className="flex items-center justify-between border rounded p-2"
-                    >
-                      <div>
-                        <div className="font-medium">{t.symbol}</div>
-                        <div className="text-sm text-muted-foreground">
-                          Qty: {t.quantity}
+              <div className="mt-4">
+                <h3 className="font-semibold mb-2">Available Lots</h3>
+                {openTrades.length > 0 ? (
+                  <div className="space-y-2">
+                    {openTrades.map((t) => (
+                      <div
+                        key={t.id}
+                        className="flex items-center justify-between border rounded p-2"
+                      >
+                        <div>
+                          <div className="font-medium">{t.symbol}</div>
+                          <div className="text-sm text-muted-foreground">
+                            Qty: {t.quantity} | Bought {t.created_at
+                              ? new Date(t.created_at).toLocaleDateString(
+                                  "en-GB"
+                                )
+                              : "-"} @ ${Number(t.price).toFixed(2)}
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            type="button"
+                            size="icon"
+                            onClick={() => adjust(t.id, -1, t.quantity)}
+                          >
+                            <Minus className="h-4 w-4" />
+                          </Button>
+                          <div>{allocations[t.id] || 0}</div>
+                          <Button
+                            type="button"
+                            size="icon"
+                            onClick={() => adjust(t.id, 1, t.quantity)}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <Button
-                          type="button"
-                          size="icon"
-                          onClick={() => adjust(t.id, -1, t.quantity)}
-                        >
-                          <Minus className="h-4 w-4" />
-                        </Button>
-                        <div>{allocations[t.id] || 0}</div>
-                        <Button
-                          type="button"
-                          size="icon"
-                          onClick={() => adjust(t.id, 1, t.quantity)}
-                        >
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                      </div>
+                    ))}
+                    <div className="text-sm text-muted-foreground">
+                      Allocated: {totalAlloc} / {quantity}
                     </div>
-                  ))}
-                  <div className="text-sm text-muted-foreground">
-                    Allocated: {totalAlloc} / {quantity}
                   </div>
-                </div>
-              )}
+                ) : (
+                  searched && (
+                    <div className="text-sm text-muted-foreground">
+                      No results found
+                    </div>
+                  )
+                )}
+              </div>
             </TabsContent>
 
             <div className="flex justify-end mt-4">
