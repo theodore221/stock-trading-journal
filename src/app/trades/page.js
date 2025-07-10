@@ -75,12 +75,15 @@ export default function TradesPage() {
           </Select>
         </div>
         <div>
-          <Select value={bucketId} onValueChange={setBucketId}>
+          <Select
+            value={bucketId || undefined}
+            onValueChange={(v) => setBucketId(v === "all" ? "" : v)}
+          >
             <SelectTrigger className="w-40">
               <SelectValue placeholder="Bucket" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Buckets</SelectItem>
+              <SelectItem value="all">All Buckets</SelectItem>
               {buckets.map((b) => (
                 <SelectItem key={b.id} value={b.id}>
                   {b.name}
