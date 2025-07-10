@@ -27,6 +27,7 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import AddTradeForm from "@/components/trades/AddTradeForm";
 import SellTradeForm from "@/components/trades/SellTradeForm";
+import { useBucketStore } from "@/store/useBucketStore";
 
 export default function BucketDetailsPage() {
   const { id } = useParams();
@@ -49,9 +50,14 @@ export default function BucketDetailsPage() {
   const [bucketName, setBucketName] = useState("");
   const [showTradeForm, setShowTradeForm] = useState(false);
   const [showSellForm, setShowSellForm] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [tradeToDelete, setTradeToDelete] = useState(null);
+  const [showTradeDeletedDialog, setShowTradeDeletedDialog] = useState(false);
   const [editingTrade, setEditingTrade] = useState(null);
   const [testData, setTestData] = useState({});
   const [adjustError, setAdjustError] = useState("");
+
+  const deleteBucket = useBucketStore((s) => s.deleteBucket);
 
   const transactionRows = useMemo(() => {
     let balance = 0;
@@ -109,6 +115,32 @@ export default function BucketDetailsPage() {
 
   const handleCreate = () => {
     fetchBucket();
+  };
+
+  const handleDeleteBucket = async () => {
+    try {
+      await deleteBucket(id);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("bucketDeleted", "1");
+      }
+      router.push("/buckets");
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeleteTrade = async () => {
+    if (!tradeToDelete) return;
+    try {
+      await axios.delete(`/api/buckets/${id}/trades/${tradeToDelete}`, {
+        withCredentials: true,
+      });
+      setTradeToDelete(null);
+      setShowTradeDeletedDialog(true);
+      fetchBucket();
+    } catch (err) {
+      console.error(err);
+    }
   };
   return (
     <div className="container mx-auto p-4">
@@ -184,7 +216,7 @@ export default function BucketDetailsPage() {
             </Button>
             <Button
               variant="destructive"
-              onClick={() => console.log("Bucket Deleted")}
+              onClick={() => setShowDeleteModal(true)}
             >
               Delete Bucket
             </Button>
@@ -390,7 +422,10 @@ export default function BucketDetailsPage() {
                         <Button
                           size="icon"
                           variant="ghost"
-                          onClick={(e) => e.stopPropagation()}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setTradeToDelete(t.id);
+                          }}
                         >
                           <Trash className="size-4" />
                         </Button>
@@ -414,6 +449,7 @@ export default function BucketDetailsPage() {
             setEditingTrade(null);
           }}
           onCreate={handleCreate}
+          onDeleted={() => setShowTradeDeletedDialog(true)}
         />
       )}
 
@@ -489,6 +525,63 @@ export default function BucketDetailsPage() {
               >
                 Confirm
               </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {showDeleteModal && (
+        <Dialog open onOpenChange={(open) => !open && setShowDeleteModal(false)}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Delete Bucket</DialogTitle>
+            </DialogHeader>
+            <p className="my-2">
+              Are you sure you want to delete this bucket? This will remove all
+              related trades and transactions.
+            </p>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowDeleteModal(false)}>
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={handleDeleteBucket}>
+                Delete
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {tradeToDelete && (
+        <Dialog open onOpenChange={(open) => !open && setTradeToDelete(null)}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Delete Trade</DialogTitle>
+            </DialogHeader>
+            <p className="my-2">Are you sure you want to delete this trade?</p>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setTradeToDelete(null)}>
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={handleDeleteTrade}>
+                Delete
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {showTradeDeletedDialog && (
+        <Dialog
+          open
+          onOpenChange={(open) => !open && setShowTradeDeletedDialog(false)}
+        >
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Trade deleted</DialogTitle>
+            </DialogHeader>
+            <DialogFooter>
+              <Button onClick={() => setShowTradeDeletedDialog(false)}>OK</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

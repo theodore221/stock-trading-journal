@@ -111,14 +111,40 @@ export async function DELETE(request, { params }) {
     const user = await verifyUserFromCookie(request);
 
     const { id } = await params;
-    const { error } = await supabaseAdmin
+
+    // delete associated trades
+    const { error: tradesError } = await supabaseAdmin
+      .from("trades")
+      .delete()
+      .eq("bucket_id", id)
+      .eq("user_id", user.id);
+    if (tradesError) {
+      return new Response(JSON.stringify({ error: tradesError.message }), {
+        status: 500,
+      });
+    }
+
+    // delete associated transactions
+    const { error: txError } = await supabaseAdmin
+      .from("bucket_transactions")
+      .delete()
+      .eq("bucket_id", id)
+      .eq("user_id", user.id);
+    if (txError) {
+      return new Response(JSON.stringify({ error: txError.message }), {
+        status: 500,
+      });
+    }
+
+    // delete bucket
+    const { error: bucketError } = await supabaseAdmin
       .from("buckets")
       .delete()
       .eq("id", id)
       .eq("user_id", user.id);
 
-    if (error)
-      return new Response(JSON.stringify({ error: error.message }), {
+    if (bucketError)
+      return new Response(JSON.stringify({ error: bucketError.message }), {
         status: 500,
       });
 

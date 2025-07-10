@@ -28,7 +28,14 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import axios from "axios";
 
-const AddTradeForm = ({ bucketId, trade = null, cash = 0, onClose, onCreate }) => {
+const AddTradeForm = ({
+  bucketId,
+  trade = null,
+  cash = 0,
+  onClose,
+  onCreate,
+  onDeleted,
+}) => {
   // General fields
   const [market, setMarket] = useState(trade?.market || "");
   const [symbol, setSymbol] = useState(trade?.symbol || "");
@@ -119,6 +126,8 @@ const AddTradeForm = ({ bucketId, trade = null, cash = 0, onClose, onCreate }) =
     }
   };
 
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
   const handleDelete = async () => {
     if (!trade?.id) return;
     try {
@@ -126,6 +135,7 @@ const AddTradeForm = ({ bucketId, trade = null, cash = 0, onClose, onCreate }) =
         withCredentials: true,
       });
       onCreate?.();
+      onDeleted?.();
       onClose();
     } catch (err) {
       console.error(err);
@@ -319,7 +329,11 @@ const AddTradeForm = ({ bucketId, trade = null, cash = 0, onClose, onCreate }) =
 
             <div className="flex justify-between mt-4">
               {trade?.id && (
-                <Button type="button" variant="destructive" onClick={handleDelete}>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={() => setShowDeleteConfirm(true)}
+                >
                   Delete
                 </Button>
               )}
@@ -331,6 +345,25 @@ const AddTradeForm = ({ bucketId, trade = null, cash = 0, onClose, onCreate }) =
         </Tabs>
       </DialogContent>
     </Dialog>
+
+    {showDeleteConfirm && (
+      <Dialog open onOpenChange={(open) => !open && setShowDeleteConfirm(false)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Delete Trade</DialogTitle>
+          </DialogHeader>
+          <p className="my-2">Are you sure you want to delete this trade?</p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDeleteConfirm(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDelete}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    )}
   );
 };
 

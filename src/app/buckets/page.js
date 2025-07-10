@@ -7,6 +7,14 @@ import Link from "next/link";
 import BucketGrid from "@/components/buckets/BucketGrid";
 import CreateBucketModal from "@/components/buckets/CreateBucketModal";
 import BucketDetailModal from "@/components/buckets/BucketDetailModal";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 // import { useStore } from "../../store";
 import { useBucketStore } from "@/store/useBucketStore";
 
@@ -19,6 +27,7 @@ export default function Buckets() {
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedBucket, setSelectedBucket] = useState(null);
+  const [showDeletedDialog, setShowDeletedDialog] = useState(false);
 
   // const fetchBuckets = async () => {
   //   try {
@@ -33,6 +42,10 @@ export default function Buckets() {
 
   useEffect(() => {
     fetchBuckets();
+    if (typeof window !== "undefined" && localStorage.getItem("bucketDeleted")) {
+      setShowDeletedDialog(true);
+      localStorage.removeItem("bucketDeleted");
+    }
   }, [fetchBuckets]);
 
   const handleCreate = (name, bucketSize) => {
@@ -64,6 +77,19 @@ export default function Buckets() {
           bucket={selectedBucket}
           onClose={() => setSelectedBucket(null)}
         />
+      )}
+
+      {showDeletedDialog && (
+        <Dialog open onOpenChange={(open) => !open && setShowDeletedDialog(false)}>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Bucket deleted</DialogTitle>
+            </DialogHeader>
+            <DialogFooter>
+              <Button onClick={() => setShowDeletedDialog(false)}>OK</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
