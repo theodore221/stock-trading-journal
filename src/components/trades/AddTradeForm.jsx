@@ -46,6 +46,7 @@ const AddTradeForm = ({ bucketId, trade = null, cash = 0, onClose, onCreate }) =
   const [confidence, setConfidence] = useState(trade?.confidence || 0);
   const [errors, setErrors] = useState({ symbol: false, quantity: false, price: false });
   const [cashError, setCashError] = useState("");
+  const [cashErrorField, setCashErrorField] = useState(null);
 
   useEffect(() => {
     if (trade) {
@@ -73,11 +74,19 @@ const AddTradeForm = ({ bucketId, trade = null, cash = 0, onClose, onCreate }) =
     }
     setErrors({ symbol: false, quantity: false, price: false });
 
-    const totalCost = Number(price) * Number(quantity);
+    const numPrice = Number(price);
+    const numQty = Number(quantity);
+    const totalCost = numPrice * numQty;
     if (totalCost > cash) {
+      if (numQty > cash / (numPrice || 1)) {
+        setCashErrorField("quantity");
+      } else {
+        setCashErrorField("price");
+      }
       setCashError("Insufficient available cash");
       return;
     }
+    setCashErrorField(null);
     setCashError("");
 
     const payload = {
@@ -226,11 +235,15 @@ const AddTradeForm = ({ bucketId, trade = null, cash = 0, onClose, onCreate }) =
                     onChange={(e) => {
                       setQuantity(e.target.value);
                       setCashError("");
+                      setCashErrorField(null);
                     }}
                     aria-invalid={errors.quantity}
                   />
                   {errors.quantity && (
                     <p className="text-destructive text-sm mt-1">Qty required</p>
+                  )}
+                  {cashError && cashErrorField === "quantity" && (
+                    <p className="text-destructive text-sm mt-1">{cashError}</p>
                   )}
                 </div>
                 <div>
@@ -245,13 +258,14 @@ const AddTradeForm = ({ bucketId, trade = null, cash = 0, onClose, onCreate }) =
                     onChange={(e) => {
                       setPrice(e.target.value);
                       setCashError("");
+                      setCashErrorField(null);
                     }}
                     aria-invalid={errors.price}
                   />
                   {errors.price && (
                     <p className="text-destructive text-sm mt-1">Price required</p>
                   )}
-                  {cashError && (
+                  {cashError && cashErrorField === "price" && (
                     <p className="text-destructive text-sm mt-1">{cashError}</p>
                   )}
                 </div>
