@@ -11,6 +11,7 @@ export async function POST(request, { params }) {
     return NextResponse.json({ error: "No allocations" }, { status: 400 });
   }
 
+  let totalProfit = 0;
   for (const alloc of allocations) {
     const { trade_id, qty } = alloc;
     const { data: trade, error } = await supabaseAdmin
@@ -22,7 +23,8 @@ export async function POST(request, { params }) {
       .single();
     if (error || !trade) continue;
 
-    const remaining = Number(trade.quantity) - Number(qty);
+    const sellQty = Number(qty);
+    const remaining = Number(trade.quantity) - sellQty;
     const updates = { quantity: remaining };
     if (remaining <= 0) {
       updates.status = "CLOSED";
@@ -38,16 +40,36 @@ export async function POST(request, { params }) {
       .eq("bucket_id", bucketId)
       .eq("user_id", user.id);
 
+    const sellValue = Number(price) * sellQty;
+    const costValue = Number(trade.price) * sellQty;
+    totalProfit += sellValue - costValue;
+
     await supabaseAdmin.from("bucket_transactions").insert([
       {
         bucket_id: bucketId,
         user_id: user.id,
-        amount: Number(price) * Number(qty),
+        amount: sellValue,
         description: `${trade.symbol} - SELL`,
-        qty,
+        qty: sellQty,
         price,
       },
     ]);
+  }
+
+  if (totalProfit !== 0) {
+    const { data: bucket } = await supabaseAdmin
+      .from("buckets")
+      .select("bucket_size")
+      .eq("id", bucketId)
+      .eq("user_id", user.id)
+      .single();
+    if (bucket) {
+      await supabaseAdmin
+        .from("buckets")
+        .update({ bucket_size: Number(bucket.bucket_size) + totalProfit })
+        .eq("id", bucketId)
+        .eq("user_id", user.id);
+    }
   }
 
   return NextResponse.json({ message: "Trades updated" });
