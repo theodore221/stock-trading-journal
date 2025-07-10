@@ -13,7 +13,7 @@ export async function GET(request, { params }) {
   let query = supabaseAdmin
     .from("trades")
     .select(
-      "id, symbol, notes, created_at, status, profit_loss, market, target, stop_loss, date, quantity, price, exit_price, return_amount, return_percent"
+      "id, symbol, notes, created_at, status, profit_loss, market, target, stop_loss, quantity, price, exit_price, return_amount, return_percent"
     )
     .eq("bucket_id", bucketId)
     .eq("user_id", user.id)
@@ -33,16 +33,8 @@ export async function GET(request, { params }) {
 export async function POST(request, { params }) {
   const { id: bucketId } = params;
   const user = await verifyUserFromCookie(request);
-  const {
-    symbol,
-    notes,
-    market,
-    target,
-    stop_loss,
-    date,
-    quantity,
-    price,
-  } = await request.json();
+  const { symbol, notes, market, target, stop_loss, date, quantity, price } =
+    await request.json();
 
   const { data: trade, error } = await supabaseAdmin
     .from("trades")
@@ -55,7 +47,6 @@ export async function POST(request, { params }) {
         market,
         target,
         stop_loss,
-        date,
         quantity,
         price,
         status: "OPEN",

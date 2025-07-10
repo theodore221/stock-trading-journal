@@ -20,7 +20,7 @@ export async function GET(request, { params }) {
     const { data: trades, error: tradesErr } = await supabaseAdmin
       .from("trades")
       .select(
-        `id, symbol, notes, created_at, status, profit_loss, market, target, stop_loss, bucket_id, date, quantity, price, exit_price, return_amount, return_percent`
+        `id, symbol, notes, created_at, status, profit_loss, market, target, stop_loss, bucket_id, quantity, price, exit_price, return_amount, return_percent`
       )
       .eq("bucket_id", bucketId)
       .eq("user_id", user.id)

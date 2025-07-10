@@ -24,12 +24,7 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table";
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-} from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import AddTradeForm from "@/components/trades/AddTradeForm";
 import SellTradeForm from "@/components/trades/SellTradeForm";
 
@@ -87,11 +82,16 @@ export default function BucketDetailsPage() {
         }
       });
       if (computedCash < 0) computedCash = 0;
-      if (computedCash > (data.bucket_size || 0)) computedCash = data.bucket_size || 0;
+      if (computedCash > (data.bucket_size || 0))
+        computedCash = data.bucket_size || 0;
       setCash(computedCash);
       setPosition(computedPos);
-      setOpenTrades((data.trades || []).filter((t) => t.status !== "CLOSED").length);
-      setClosedTrades((data.trades || []).filter((t) => t.status === "CLOSED").length);
+      setOpenTrades(
+        (data.trades || []).filter((t) => t.status !== "CLOSED").length
+      );
+      setClosedTrades(
+        (data.trades || []).filter((t) => t.status === "CLOSED").length
+      );
       setWins(0);
       setLosses(0);
       setAvgWin(0);
@@ -109,14 +109,6 @@ export default function BucketDetailsPage() {
   const handleCreate = () => {
     fetchBucket();
   };
-
-  const handleTest = () => {
-    console.log("trades");
-    console.log(trades);
-    console.log("printing response data");
-    console.log(testData);
-  };
-
   return (
     <div className="container mx-auto p-4">
       <div className="flex">
@@ -162,10 +154,10 @@ export default function BucketDetailsPage() {
           {/* Bucket Stats */}
           <div className="mt-4 text-center space-y-1">
             <div className="text-3xl font-bold text-blue-600">
-              {`$${bucketSize.toLocaleString()}`}
+              {`$${bucketSize.toFixed(2).toLocaleString()}`}
             </div>
-            <div>{`Cash: $${cash.toLocaleString()}`}</div>
-            <div>{`Position: $${position.toLocaleString()}`}</div>
+            <div>{`Cash: $${cash.toFixed(2).toLocaleString()}`}</div>
+            <div>{`Position: $${position.toFixed(2).toLocaleString()}`}</div>
           </div>
 
           {/* Centered Add Trade Button */}
@@ -176,7 +168,7 @@ export default function BucketDetailsPage() {
                 setShowTradeForm(true);
               }}
             >
-              + Add Trade
+              Add Trade
             </Button>
             <Button
               onClick={() => {
@@ -185,7 +177,6 @@ export default function BucketDetailsPage() {
             >
               Sell Trade
             </Button>
-            <Button onClick={handleTest}> Test Trade</Button>
             <Button
               variant="destructive"
               onClick={() => console.log("Bucket Deleted")}
@@ -306,10 +297,14 @@ export default function BucketDetailsPage() {
                         }
                       >
                         {tx.amount >= 0
-                          ? `+$${Number(tx.amount).toLocaleString()}`
-                          : `-$${Math.abs(Number(tx.amount)).toLocaleString()}`}
+                          ? `+$${Number(tx.amount).toFixed(2).toLocaleString()}`
+                          : `-$${Math.abs(Number(tx.amount))
+                              .toFixed(2)
+                              .toLocaleString()}`}
                       </TableCell>
-                      <TableCell>{`$${Number(tx.balance).toLocaleString()}`}</TableCell>
+                      <TableCell>{`$${Number(tx.balance)
+                        .toFixed(2)
+                        .toLocaleString()}`}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -321,8 +316,8 @@ export default function BucketDetailsPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Date</TableHead>
-                    <TableHead>Symbol</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead>Symbol</TableHead>
                     <TableHead>Qty</TableHead>
                     <TableHead>Entry ($)</TableHead>
                     <TableHead>Exit ($)</TableHead>
@@ -347,15 +342,37 @@ export default function BucketDetailsPage() {
                           ? new Date(t.created_at).toLocaleDateString("en-GB")
                           : "-"}
                       </TableCell>
+                      <TableCell>
+                        {
+                          <span
+                            type="button"
+                            size="sm"
+                            onClick={() => {}}
+                            className={`px-3 py-1 rounded-full text-[11px] ${
+                              t.status === "OPEN"
+                                ? "bg-green-500 text-white"
+                                : "bg-red-500 text-white"
+                            }`}
+                          >
+                            {t.status}
+                          </span>
+                        }
+                      </TableCell>
+                      {/* <TableCell>{t.status || ""}</TableCell> */}
                       <TableCell>{t.symbol || ""}</TableCell>
-                      <TableCell>{t.status || ""}</TableCell>
                       <TableCell>{t.quantity}</TableCell>
                       <TableCell>{Number(t.price).toFixed(2)}</TableCell>
-                      <TableCell>{t.exit_price ?? ""}</TableCell>
-                      <TableCell>{t.holdDuration || "2 Days"}</TableCell>
-                      <TableCell>{t.return_amount ?? ""}</TableCell>
                       <TableCell>
-                        {t.return_percent ? `${t.return_percent}%` : ""}
+                        {Number(t.exit_price).toFixed(2) ?? ""}
+                      </TableCell>
+                      <TableCell>{t.holdDuration || "2 Days"}</TableCell>
+                      <TableCell>
+                        {Number(t.return_amount).toFixed(2) ?? ""}
+                      </TableCell>
+                      <TableCell>
+                        {t.return_percent
+                          ? `${Number(t.return_percent).toFixed(2)}%`
+                          : ""}
                       </TableCell>
                       <TableCell className="space-x-1">
                         <Button
