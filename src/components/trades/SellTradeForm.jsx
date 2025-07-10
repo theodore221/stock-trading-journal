@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -34,6 +34,7 @@ const SellTradeForm = ({ bucketId, onClose, onSold }) => {
   const [openTrades, setOpenTrades] = useState([]);
   const [allocations, setAllocations] = useState({});
   const [searched, setSearched] = useState(false);
+  const [sortBy, setSortBy] = useState("date");
 
   const fetchTrades = async () => {
     try {
@@ -61,6 +62,15 @@ const SellTradeForm = ({ bucketId, onClose, onSold }) => {
   };
 
   const totalAlloc = Object.values(allocations).reduce((s, v) => s + v, 0);
+  const sortedTrades = useMemo(() => {
+    const copy = [...openTrades];
+    return copy.sort((a, b) => {
+      if (sortBy === "price") {
+        return Number(a.price) - Number(b.price);
+      }
+      return new Date(a.created_at) - new Date(b.created_at);
+    });
+  }, [openTrades, sortBy]);
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -203,10 +213,21 @@ const SellTradeForm = ({ bucketId, onClose, onSold }) => {
               </div>
 
               <div className="mt-4">
-                <h3 className="font-semibold mb-2">Available Lots</h3>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-semibold">Available Lots</h3>
+                  <Select value={sortBy} onValueChange={setSortBy}>
+                    <SelectTrigger id="sortBy" className="w-[100px]">
+                      <SelectValue placeholder="Sort" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="date">Date</SelectItem>
+                      <SelectItem value="price">Price</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
                 {openTrades.length > 0 ? (
                   <div className="space-y-2">
-                    {openTrades.map((t) => (
+                    {sortedTrades.map((t) => (
                       <div
                         key={t.id}
                         className="flex items-center justify-between border rounded p-2"
