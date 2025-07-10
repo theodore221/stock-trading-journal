@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { verifyUserFromCookie } from "@/lib/authMiddleware";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { calculateAvailableCash } from "@/lib/bucketUtils";
 
 export async function GET(request, { params }) {
   const { id: bucketId } = params;
@@ -35,6 +36,19 @@ export async function POST(request, { params }) {
   const user = await verifyUserFromCookie(request);
   const { symbol, notes, market, target, stop_loss, date, quantity, price } =
     await request.json();
+
+  const tradeCost = Number(price) * Number(quantity);
+  const availableCash = await calculateAvailableCash(
+    supabaseAdmin,
+    bucketId,
+    user.id
+  );
+  if (tradeCost > availableCash) {
+    return NextResponse.json(
+      { error: "Insufficient cash for this trade" },
+      { status: 400 }
+    );
+  }
 
   const { data: trade, error } = await supabaseAdmin
     .from("trades")
