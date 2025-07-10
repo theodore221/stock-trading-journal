@@ -143,8 +143,9 @@ const AddTradeForm = ({
   };
 
   return (
-    <Dialog open onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-4xl">
+    <>
+      <Dialog open onOpenChange={(open) => !open && onClose()}>
+        <DialogContent className="sm:max-w-4xl">
         <Tabs defaultValue="general">
           <DialogHeader className="flex pr-2 pt-5 mb-8">
             <div className="flex justify-between items-center ">
@@ -344,10 +345,10 @@ const AddTradeForm = ({
           </form>
         </Tabs>
       </DialogContent>
-    </Dialog>
+      </Dialog>
 
-    {showDeleteConfirm && (
-      <Dialog open onOpenChange={(open) => !open && setShowDeleteConfirm(false)}>
+      {showDeleteConfirm && (
+        <Dialog open onOpenChange={(open) => !open && setShowDeleteConfirm(false)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle>Delete Trade</DialogTitle>
@@ -362,8 +363,9 @@ const AddTradeForm = ({
             </Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog>
-    )}
+        </Dialog>
+      )}
+    </>
   );
 };
 
