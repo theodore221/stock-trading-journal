@@ -146,12 +146,12 @@ export default function BucketDetailsPage() {
     <div className="container mx-auto p-4">
       <div className="flex">
         {/* Left Panel */}
-        <div className="w-1/5 flex flex-col bg-muted pr-6 p-2 h-[calc(100vh-5rem)] ">
+        <div className="w-1/5 flex flex-col pr-6 p-2 h-[calc(100vh-5rem)] border-r border-gray-500 border-opacity-25 ">
           {/* Back Button */}
           <div>
             <Button
               variant="ghost"
-              className="justify-start hover:bg-black hover:text-white"
+              className="justify-start"
               onClick={() => router.back()}
             >
               ← Back
@@ -412,13 +412,13 @@ export default function BucketDetailsPage() {
                           : ""}
                       </TableCell>
                       <TableCell className="space-x-1">
-                        <Button
+                        {/* <Button
                           variant="destructive"
                           size="sm"
                           onClick={(e) => e.stopPropagation()}
                         >
                           Sell
-                        </Button>
+                        </Button> */}
                         <Button
                           size="icon"
                           variant="ghost"
@@ -472,29 +472,29 @@ export default function BucketDetailsPage() {
                 {adjustType === "deposit" ? "Deposit Funds" : "Withdraw Funds"}
               </DialogTitle>
             </DialogHeader>
-          <div className="grid gap-2 mt-2">
-            <Label htmlFor="adjust-amount">$ Amount</Label>
-            <Input
-              id="adjust-amount"
-              type="number"
-              step="0.01"
-              inputMode="decimal"
-              value={adjustAmount}
-              onChange={(e) => {
-                setAdjustAmount(parseFloat(e.target.value));
-                setAdjustError("");
-              }}
-              placeholder="0.00"
-              aria-invalid={adjustError ? true : false}
-            />
-            {adjustError && (
-              <p className="text-destructive text-sm mt-1">{adjustError}</p>
-            )}
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setShowAdjustModal(false)}
+            <div className="grid gap-2 mt-2">
+              <Label htmlFor="adjust-amount">$ Amount</Label>
+              <Input
+                id="adjust-amount"
+                type="number"
+                step="0.01"
+                inputMode="decimal"
+                value={adjustAmount}
+                onChange={(e) => {
+                  setAdjustAmount(parseFloat(e.target.value));
+                  setAdjustError("");
+                }}
+                placeholder="0.00"
+                aria-invalid={adjustError ? true : false}
+              />
+              {adjustError && (
+                <p className="text-destructive text-sm mt-1">{adjustError}</p>
+              )}
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setShowAdjustModal(false)}
               >
                 Cancel
               </Button>
@@ -531,7 +531,10 @@ export default function BucketDetailsPage() {
       )}
 
       {showDeleteModal && (
-        <Dialog open onOpenChange={(open) => !open && setShowDeleteModal(false)}>
+        <Dialog
+          open
+          onOpenChange={(open) => !open && setShowDeleteModal(false)}
+        >
           <DialogContent className="max-w-sm">
             <DialogHeader>
               <DialogTitle>Delete Bucket</DialogTitle>
@@ -541,7 +544,10 @@ export default function BucketDetailsPage() {
               related trades and transactions.
             </p>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowDeleteModal(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteModal(false)}
+              >
                 Cancel
               </Button>
               <Button variant="destructive" onClick={handleDeleteBucket}>
@@ -581,7 +587,9 @@ export default function BucketDetailsPage() {
               <DialogTitle>Trade deleted</DialogTitle>
             </DialogHeader>
             <DialogFooter>
-              <Button onClick={() => setShowTradeDeletedDialog(false)}>OK</Button>
+              <Button onClick={() => setShowTradeDeletedDialog(false)}>
+                OK
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
