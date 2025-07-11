@@ -111,7 +111,7 @@ const SellTradeForm = ({ bucketId, onClose, onSold }) => {
             <TabsContent value="general" className="space-y-4">
               <div>
                 <Label htmlFor="symbol" className="mb-2">Symbol</Label>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 w-fit">
                   <Input
                     id="symbol"
                     placeholder="e.g. SOXL"
@@ -120,8 +120,14 @@ const SellTradeForm = ({ bucketId, onClose, onSold }) => {
                       setSymbol(e.target.value);
                       setSearched(false);
                     }}
+                    className="w-36"
                   />
-                  <Button type="button" size="icon" onClick={fetchTrades}>
+                  <Button
+                    type="button"
+                    size="icon"
+                    onClick={fetchTrades}
+                    className="shrink-0"
+                  >
                     <Search className="h-4 w-4" />
                   </Button>
                 </div>
