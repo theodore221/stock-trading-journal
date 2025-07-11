@@ -19,15 +19,11 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Search, Minus, Plus } from "lucide-react";
 import axios from "axios";
 
 const SellTradeForm = ({ bucketId, onClose, onSold }) => {
-  const [market, setMarket] = useState("");
   const [symbol, setSymbol] = useState("");
-  const [target, setTarget] = useState("");
-  const [stopLoss, setStopLoss] = useState("");
   const [date, setDate] = useState(new Date().toISOString().slice(0, 16));
   const [quantity, setQuantity] = useState(0);
   const [price, setPrice] = useState(0);
@@ -113,65 +109,21 @@ const SellTradeForm = ({ bucketId, onClose, onSold }) => {
 
           <form onSubmit={onSubmit} className="space-y-6">
             <TabsContent value="general" className="space-y-4">
-              <div className="grid grid-cols-4 gap-3">
-                <div>
-                  <Label htmlFor="market" className="mb-2">
-                    Market
-                  </Label>
-                  <Select value={market} onValueChange={setMarket}>
-                    <SelectTrigger id="market">
-                      <SelectValue placeholder="Select market" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ETF">ETF</SelectItem>
-                      <SelectItem value="FOREX">FOREX</SelectItem>
-                      <SelectItem value="DERIVATIVE">DERIVATIVE</SelectItem>
-                      <SelectItem value="EQUITY">EQUITY</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="symbol" className="mb-2">
-                    Symbol
-                  </Label>
-                  <div className="flex items-center space-x-2">
-                    <Input
-                      id="symbol"
-                      placeholder="e.g. SOXL"
-                      value={symbol}
-                      onChange={(e) => {
-                        setSymbol(e.target.value);
-                        setSearched(false);
-                      }}
-                    />
-                    <Button type="button" size="icon" onClick={fetchTrades}>
-                      <Search className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="target" className="mb-2">
-                    Target
-                  </Label>
+              <div>
+                <Label htmlFor="symbol" className="mb-2">Symbol</Label>
+                <div className="flex items-center space-x-2">
                   <Input
-                    id="target"
-                    type="number"
-                    step="0.01"
-                    value={target}
-                    onChange={(e) => setTarget(e.target.value)}
+                    id="symbol"
+                    placeholder="e.g. SOXL"
+                    value={symbol}
+                    onChange={(e) => {
+                      setSymbol(e.target.value);
+                      setSearched(false);
+                    }}
                   />
-                </div>
-                <div>
-                  <Label htmlFor="stopLoss" className="mb-2">
-                    Stop-Loss
-                  </Label>
-                  <Input
-                    id="stopLoss"
-                    type="number"
-                    step="0.01"
-                    value={stopLoss}
-                    onChange={(e) => setStopLoss(e.target.value)}
-                  />
+                  <Button type="button" size="icon" onClick={fetchTrades}>
+                    <Search className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
 
