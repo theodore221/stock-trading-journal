@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -19,20 +19,18 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Search, Minus, Plus } from "lucide-react";
 import axios from "axios";
 
 const SellTradeForm = ({ bucketId, onClose, onSold }) => {
-  const [market, setMarket] = useState("");
   const [symbol, setSymbol] = useState("");
-  const [target, setTarget] = useState("");
-  const [stopLoss, setStopLoss] = useState("");
   const [date, setDate] = useState(new Date().toISOString().slice(0, 16));
   const [quantity, setQuantity] = useState(0);
   const [price, setPrice] = useState(0);
   const [openTrades, setOpenTrades] = useState([]);
   const [allocations, setAllocations] = useState({});
+  const [searched, setSearched] = useState(false);
+  const [sortBy, setSortBy] = useState("date");
 
   const fetchTrades = async () => {
     try {
@@ -46,6 +44,7 @@ const SellTradeForm = ({ bucketId, onClose, onSold }) => {
         map[t.id] = 0;
       });
       setAllocations(map);
+      setSearched(true);
     } catch (err) {
       console.error(err);
     }
@@ -59,6 +58,15 @@ const SellTradeForm = ({ bucketId, onClose, onSold }) => {
   };
 
   const totalAlloc = Object.values(allocations).reduce((s, v) => s + v, 0);
+  const sortedTrades = useMemo(() => {
+    const copy = [...openTrades];
+    return copy.sort((a, b) => {
+      if (sortBy === "price") {
+        return Number(a.price) - Number(b.price);
+      }
+      return new Date(a.created_at) - new Date(b.created_at);
+    });
+  }, [openTrades, sortBy]);
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -101,62 +109,27 @@ const SellTradeForm = ({ bucketId, onClose, onSold }) => {
 
           <form onSubmit={onSubmit} className="space-y-6">
             <TabsContent value="general" className="space-y-4">
-              <div className="grid grid-cols-4 gap-3">
-                <div>
-                  <Label htmlFor="market" className="mb-2">
-                    Market
-                  </Label>
-                  <Select value={market} onValueChange={setMarket}>
-                    <SelectTrigger id="market">
-                      <SelectValue placeholder="Select market" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ETF">ETF</SelectItem>
-                      <SelectItem value="FOREX">FOREX</SelectItem>
-                      <SelectItem value="DERIVATIVE">DERIVATIVE</SelectItem>
-                      <SelectItem value="EQUITY">EQUITY</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor="symbol" className="mb-2">
-                    Symbol
-                  </Label>
-                  <div className="flex items-center space-x-2">
-                    <Input
-                      id="symbol"
-                      placeholder="e.g. SOXL"
-                      value={symbol}
-                      onChange={(e) => setSymbol(e.target.value)}
-                    />
-                    <Button type="button" size="icon" onClick={fetchTrades}>
-                      <Search className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="target" className="mb-2">
-                    Target
-                  </Label>
+              <div>
+                <Label htmlFor="symbol" className="mb-2">Symbol</Label>
+                <div className="flex items-center space-x-2 w-fit">
                   <Input
-                    id="target"
-                    type="number"
-                    step="0.01"
-                    value={target}
-                    onChange={(e) => setTarget(e.target.value)}
+                    id="symbol"
+                    placeholder="e.g. SOXL"
+                    value={symbol}
+                    onChange={(e) => {
+                      setSymbol(e.target.value);
+                      setSearched(false);
+                    }}
+                    className="w-36"
                   />
-                </div>
-                <div>
-                  <Label htmlFor="stopLoss" className="mb-2">
-                    Stop-Loss
-                  </Label>
-                  <Input
-                    id="stopLoss"
-                    type="number"
-                    step="0.01"
-                    value={stopLoss}
-                    onChange={(e) => setStopLoss(e.target.value)}
-                  />
+                  <Button
+                    type="button"
+                    size="icon"
+                    onClick={fetchTrades}
+                    className="shrink-0"
+                  >
+                    <Search className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
 
@@ -197,43 +170,67 @@ const SellTradeForm = ({ bucketId, onClose, onSold }) => {
                 </div>
               </div>
 
-              {openTrades.length > 0 && (
-                <div className="mt-4 space-y-2">
-                  {openTrades.map((t) => (
-                    <div
-                      key={t.id}
-                      className="flex items-center justify-between border rounded p-2"
-                    >
-                      <div>
-                        <div className="font-medium">{t.symbol}</div>
-                        <div className="text-sm text-muted-foreground">
-                          Qty: {t.quantity}
+              <div className="mt-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-semibold">Available Lots</h3>
+                  <Select value={sortBy} onValueChange={setSortBy}>
+                    <SelectTrigger id="sortBy" className="w-[100px]">
+                      <SelectValue placeholder="Sort" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="date">Date</SelectItem>
+                      <SelectItem value="price">Price</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {openTrades.length > 0 ? (
+                  <div className="space-y-2">
+                    {sortedTrades.map((t) => (
+                      <div
+                        key={t.id}
+                        className="flex items-center justify-between border rounded p-2"
+                      >
+                        <div>
+                          <div className="font-medium">{t.symbol}</div>
+                          <div className="text-sm text-muted-foreground">
+                            Qty: {t.quantity} | Bought {t.created_at
+                              ? new Date(t.created_at).toLocaleDateString(
+                                  "en-GB"
+                                )
+                              : "-"} @ ${Number(t.price).toFixed(2)}
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            type="button"
+                            size="icon"
+                            onClick={() => adjust(t.id, -1, t.quantity)}
+                          >
+                            <Minus className="h-4 w-4" />
+                          </Button>
+                          <div>{allocations[t.id] || 0}</div>
+                          <Button
+                            type="button"
+                            size="icon"
+                            onClick={() => adjust(t.id, 1, t.quantity)}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <Button
-                          type="button"
-                          size="icon"
-                          onClick={() => adjust(t.id, -1, t.quantity)}
-                        >
-                          <Minus className="h-4 w-4" />
-                        </Button>
-                        <div>{allocations[t.id] || 0}</div>
-                        <Button
-                          type="button"
-                          size="icon"
-                          onClick={() => adjust(t.id, 1, t.quantity)}
-                        >
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                      </div>
+                    ))}
+                    <div className="text-sm text-muted-foreground">
+                      Allocated: {totalAlloc} / {quantity}
                     </div>
-                  ))}
-                  <div className="text-sm text-muted-foreground">
-                    Allocated: {totalAlloc} / {quantity}
                   </div>
-                </div>
-              )}
+                ) : (
+                  searched && (
+                    <div className="text-sm text-muted-foreground">
+                      No results found
+                    </div>
+                  )
+                )}
+              </div>
             </TabsContent>
 
             <div className="flex justify-end mt-4">
