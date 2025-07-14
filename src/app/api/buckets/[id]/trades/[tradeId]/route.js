@@ -1,18 +1,18 @@
-import { NextResponse } from "next/server";
-import { verifyUserFromCookie } from "@/lib/authMiddleware";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+import { NextResponse } from 'next/server';
+import { verifyUserFromCookie } from '@/lib/authMiddleware';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 
 export async function GET(request, { params }) {
   const { id: bucketId, tradeId } = params;
   const user = await verifyUserFromCookie(request);
   const { data, error } = await supabaseAdmin
-    .from("trades")
+    .from('trades')
     .select(
-      "id, symbol, notes, created_at, status, profit_loss, market, target, stop_loss, date, quantity, price, exit_price, return_amount, return_percent"
+      'id, symbol, notes, created_at, status, profit_loss, market, target, stop_loss, quantity, price, exit_price, return_amount, return_percent'
     )
-    .eq("id", tradeId)
-    .eq("bucket_id", bucketId)
-    .eq("user_id", user.id)
+    .eq('id', tradeId)
+    .eq('bucket_id', bucketId)
+    .eq('user_id', user.id)
     .single();
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -29,7 +29,7 @@ export async function PUT(request, { params }) {
     market,
     target,
     stop_loss,
-    date,
+    created_at,
     quantity,
     price,
     status,
@@ -38,19 +38,20 @@ export async function PUT(request, { params }) {
     return_percent,
   } = await request.json();
 
-  const parsedTarget = target === "" || target === undefined ? null : Number(target);
+  const parsedTarget =
+    target === '' || target === undefined ? null : Number(target);
   const parsedStopLoss =
-    stop_loss === "" || stop_loss === undefined ? null : Number(stop_loss);
+    stop_loss === '' || stop_loss === undefined ? null : Number(stop_loss);
 
   const { data: trade, error } = await supabaseAdmin
-    .from("trades")
+    .from('trades')
     .update({
       symbol,
       notes,
       market,
       target: parsedTarget,
       stop_loss: parsedStopLoss,
-      date,
+      created_at,
       quantity,
       price,
       status,
@@ -58,9 +59,9 @@ export async function PUT(request, { params }) {
       return_amount,
       return_percent,
     })
-    .eq("id", tradeId)
-    .eq("bucket_id", bucketId)
-    .eq("user_id", user.id)
+    .eq('id', tradeId)
+    .eq('bucket_id', bucketId)
+    .eq('user_id', user.id)
     .select()
     .single();
 
@@ -76,15 +77,15 @@ export async function DELETE(request, { params }) {
   const user = await verifyUserFromCookie(request);
 
   const { error } = await supabaseAdmin
-    .from("trades")
+    .from('trades')
     .delete()
-    .eq("id", tradeId)
-    .eq("bucket_id", bucketId)
-    .eq("user_id", user.id);
+    .eq('id', tradeId)
+    .eq('bucket_id', bucketId)
+    .eq('user_id', user.id);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ message: "Trade deleted" }, { status: 200 });
+  return NextResponse.json({ message: 'Trade deleted' }, { status: 200 });
 }
