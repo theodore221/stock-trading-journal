@@ -403,10 +403,22 @@ export default function BucketDetailsPage() {
                         {Number(t.exit_price).toFixed(2) ?? ""}
                       </TableCell>
                       <TableCell>{t.holdDuration || "2 Days"}</TableCell>
-                      <TableCell>
+                      <TableCell
+                        className={
+                          t.return_amount >= 0
+                            ? "text-green-600"
+                            : "text-red-600"
+                        }
+                      >
                         {Number(t.return_amount).toFixed(2) ?? ""}
                       </TableCell>
-                      <TableCell>
+                      <TableCell
+                        className={
+                          t.return_percent >= 0
+                            ? "text-green-600"
+                            : "text-red-600"
+                        }
+                      >
                         {t.return_percent
                           ? `${Number(t.return_percent).toFixed(2)}%`
                           : ""}

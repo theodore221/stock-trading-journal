@@ -224,6 +224,8 @@ const AddTradeForm = ({
                       id="target"
                       type="number"
                       step="0.01"
+                      inputMode="decimal"
+                      placeholder="Enter target price"
                       value={target}
                       onChange={(e) => setTarget(e.target.value)}
                     />
@@ -236,6 +238,8 @@ const AddTradeForm = ({
                       id="stopLoss"
                       type="number"
                       step="0.01"
+                      inputMode="decimal"
+                      placeholder="Enter stop-loss"
                       value={stopLoss}
                       onChange={(e) => setStopLoss(e.target.value)}
                     />
@@ -262,6 +266,8 @@ const AddTradeForm = ({
                       id="quantity"
                       type="number"
                       value={quantity}
+                      inputMode="numeric"
+                      placeholder="Enter quantity"
                       onChange={(e) => {
                         setQuantity(e.target.value);
                         setCashError("");
@@ -288,6 +294,8 @@ const AddTradeForm = ({
                       id="price"
                       type="number"
                       step="0.01"
+                      inputMode="decimal"
+                      placeholder="0.00"
                       value={price}
                       onChange={(e) => {
                         setPrice(e.target.value);
