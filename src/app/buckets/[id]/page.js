@@ -403,10 +403,22 @@ export default function BucketDetailsPage() {
                         {Number(t.exit_price).toFixed(2) ?? ""}
                       </TableCell>
                       <TableCell>{t.holdDuration || "2 Days"}</TableCell>
-                      <TableCell>
+                      <TableCell
+                        className={
+                          t.return_amount >= 0
+                            ? "text-green-600"
+                            : "text-red-600"
+                        }
+                      >
                         {Number(t.return_amount).toFixed(2) ?? ""}
                       </TableCell>
-                      <TableCell>
+                      <TableCell
+                        className={
+                          t.return_percent >= 0
+                            ? "text-green-600"
+                            : "text-red-600"
+                        }
+                      >
                         {t.return_percent
                           ? `${Number(t.return_percent).toFixed(2)}%`
                           : ""}
@@ -472,29 +484,29 @@ export default function BucketDetailsPage() {
                 {adjustType === "deposit" ? "Deposit Funds" : "Withdraw Funds"}
               </DialogTitle>
             </DialogHeader>
-          <div className="grid gap-2 mt-2">
-            <Label htmlFor="adjust-amount">$ Amount</Label>
-            <Input
-              id="adjust-amount"
-              type="number"
-              step="0.01"
-              inputMode="decimal"
-              value={adjustAmount}
-              onChange={(e) => {
-                setAdjustAmount(parseFloat(e.target.value));
-                setAdjustError("");
-              }}
-              placeholder="0.00"
-              aria-invalid={adjustError ? true : false}
-            />
-            {adjustError && (
-              <p className="text-destructive text-sm mt-1">{adjustError}</p>
-            )}
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setShowAdjustModal(false)}
+            <div className="grid gap-2 mt-2">
+              <Label htmlFor="adjust-amount">$ Amount</Label>
+              <Input
+                id="adjust-amount"
+                type="number"
+                step="0.01"
+                inputMode="decimal"
+                value={adjustAmount}
+                onChange={(e) => {
+                  setAdjustAmount(parseFloat(e.target.value));
+                  setAdjustError("");
+                }}
+                placeholder="0.00"
+                aria-invalid={adjustError ? true : false}
+              />
+              {adjustError && (
+                <p className="text-destructive text-sm mt-1">{adjustError}</p>
+              )}
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setShowAdjustModal(false)}
               >
                 Cancel
               </Button>
@@ -531,7 +543,10 @@ export default function BucketDetailsPage() {
       )}
 
       {showDeleteModal && (
-        <Dialog open onOpenChange={(open) => !open && setShowDeleteModal(false)}>
+        <Dialog
+          open
+          onOpenChange={(open) => !open && setShowDeleteModal(false)}
+        >
           <DialogContent className="max-w-sm">
             <DialogHeader>
               <DialogTitle>Delete Bucket</DialogTitle>
@@ -541,7 +556,10 @@ export default function BucketDetailsPage() {
               related trades and transactions.
             </p>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setShowDeleteModal(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteModal(false)}
+              >
                 Cancel
               </Button>
               <Button variant="destructive" onClick={handleDeleteBucket}>
@@ -581,7 +599,9 @@ export default function BucketDetailsPage() {
               <DialogTitle>Trade deleted</DialogTitle>
             </DialogHeader>
             <DialogFooter>
-              <Button onClick={() => setShowTradeDeletedDialog(false)}>OK</Button>
+              <Button onClick={() => setShowTradeDeletedDialog(false)}>
+                OK
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
