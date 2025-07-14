@@ -34,8 +34,20 @@ export async function GET(request, { params }) {
 export async function POST(request, { params }) {
   const { id: bucketId } = params;
   const user = await verifyUserFromCookie(request);
-  const { symbol, notes, market, target, stop_loss, date, quantity, price } =
-    await request.json();
+  const {
+    symbol,
+    notes,
+    market,
+    target,
+    stop_loss,
+    date,
+    quantity,
+    price,
+  } = await request.json();
+
+  const parsedTarget = target === "" || target === undefined ? null : Number(target);
+  const parsedStopLoss =
+    stop_loss === "" || stop_loss === undefined ? null : Number(stop_loss);
 
   const tradeCost = Number(price) * Number(quantity);
   const availableCash = await calculateAvailableCash(
@@ -59,8 +71,8 @@ export async function POST(request, { params }) {
         symbol,
         notes,
         market,
-        target,
-        stop_loss,
+        target: parsedTarget,
+        stop_loss: parsedStopLoss,
         quantity,
         price,
         status: "OPEN",

@@ -38,14 +38,18 @@ export async function PUT(request, { params }) {
     return_percent,
   } = await request.json();
 
+  const parsedTarget = target === "" || target === undefined ? null : Number(target);
+  const parsedStopLoss =
+    stop_loss === "" || stop_loss === undefined ? null : Number(stop_loss);
+
   const { data: trade, error } = await supabaseAdmin
     .from("trades")
     .update({
       symbol,
       notes,
       market,
-      target,
-      stop_loss,
+      target: parsedTarget,
+      stop_loss: parsedStopLoss,
       date,
       quantity,
       price,
