@@ -140,6 +140,13 @@ export async function POST(request) {
 
 Bucket endpoints combine authentication with Supabase queries to fetch bucket details, trades and transactions.
 
+### Tracking Trade Executions
+
+Each buy or sell action now records a row in `bucket_transactions` with a
+`trade_id` referencing the related trade. This linkage allows the API to
+calculate weighted exit prices and total returns when a position is fully
+closed.
+
 ### Forms and UI Components
 
 - `AddTradeForm.jsx` and `SellTradeForm.jsx` provide dialogs for creating or closing trades.
