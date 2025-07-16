@@ -176,7 +176,7 @@ export default function BucketDetailsPage() {
               Deposit
             </Button>
             <Button
-              variant="destructive"
+              variant="secondary"
               onClick={() => {
                 setAdjustType("withdraw");
                 setAdjustAmount(0);
@@ -226,21 +226,21 @@ export default function BucketDetailsPage() {
         {/* Right Panel */}
         <div className="w-4/5 pl-6 flex flex-col space-y-6 max-h-[calc(100vh-4rem)] overflow-auto">
           {/* Stats Cards */}
-          <div className="flex flex-wrap justify-center gap-3">
+          <div className="flex flex-wrap gap-3">
             {[
               {
                 label: "Bucket Size",
-                value: `$${bucketSize.toLocaleString()}`,
+                value: `$${bucketSize.toFixed(2).toLocaleString()}`,
                 positive: null,
               },
               {
                 label: "Cash",
-                value: `$${cash.toLocaleString()}`,
+                value: `$${cash.toFixed(2).toLocaleString()}`,
                 positive: null,
               },
               {
                 label: "Position",
-                value: `$${position.toLocaleString()}`,
+                value: `$${position.toFixed(2).toLocaleString()}`,
                 positive: null,
               },
               { label: "Wins", value: wins, positive: null },
@@ -265,15 +265,13 @@ export default function BucketDetailsPage() {
             ].map((stat) => (
               <Card
                 key={stat.label}
-                className="flex flex-row justify-between items-center min-w-[10rem] p-3"
+                className="flex flex-row justify-between items-center min-w-[9rem]  p-3"
               >
-                <CardHeader className="p-0">
-                  <CardTitle className="text-sm whitespace-nowrap min-w-[8rem]">
-                    {stat.label}
-                  </CardTitle>
-                </CardHeader>
+                <CardTitle className="text-sm whitespace-nowrap min-w-[5rem]">
+                  {stat.label}
+                </CardTitle>
                 <CardContent
-                  className={`p-0 text-right ${
+                  className={`p-0 text-sm text-right ${
                     stat.positive === null
                       ? ""
                       : stat.positive

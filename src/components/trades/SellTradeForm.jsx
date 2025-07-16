@@ -121,7 +121,9 @@ const SellTradeForm = ({ bucketId, onClose, onSold }) => {
           <form onSubmit={onSubmit} className="space-y-6">
             <TabsContent value="general" className="space-y-4">
               <div>
-                <Label htmlFor="symbol" className="mb-2">Symbol</Label>
+                <Label htmlFor="symbol" className="mb-2">
+                  Symbol
+                </Label>
                 <div className="flex items-center space-x-2 w-fit">
                   <Input
                     id="symbol"
@@ -204,11 +206,16 @@ const SellTradeForm = ({ bucketId, onClose, onSold }) => {
                         <div>
                           <div className="font-medium">{t.symbol}</div>
                           <div className="text-sm text-muted-foreground">
-                            Qty: {t.quantity} | Bought {t.created_at
+                            Qty: {t.quantity} | Bought{" "}
+                            {t.created_at
                               ? new Date(t.created_at).toLocaleDateString(
                                   "en-GB"
                                 )
-                              : "-"} @ ${Number(t.price).toFixed(2)}
+                              : "-"}{" "}
+                            @{" "}
+                            <span className="text-blue-600 font-bold">
+                              ${Number(t.price).toFixed(2)}
+                            </span>
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
