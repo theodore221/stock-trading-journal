@@ -31,6 +31,7 @@ const SellTradeForm = ({ bucketId, onClose, onSold }) => {
   const [allocations, setAllocations] = useState({});
   const [searched, setSearched] = useState(false);
   const [sortBy, setSortBy] = useState("date");
+  const [formError, setFormError] = useState("");
 
   const fetchTrades = async () => {
     try {
@@ -70,6 +71,16 @@ const SellTradeForm = ({ bucketId, onClose, onSold }) => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    const qtyNum = Number(quantity);
+    if (qtyNum <= 0) {
+      setFormError("Quantity must be greater than 0");
+      return;
+    }
+    if (totalAlloc !== qtyNum) {
+      setFormError("Allocated quantity must match sell quantity");
+      return;
+    }
+    setFormError("");
     const payload = {
       date,
       price: Number(price),
@@ -222,6 +233,9 @@ const SellTradeForm = ({ bucketId, onClose, onSold }) => {
                     <div className="text-sm text-muted-foreground">
                       Allocated: {totalAlloc} / {quantity}
                     </div>
+                    {formError && (
+                      <p className="text-destructive text-sm mt-1">{formError}</p>
+                    )}
                   </div>
                 ) : (
                   searched && (
