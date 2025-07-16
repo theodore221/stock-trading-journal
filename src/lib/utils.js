@@ -5,6 +5,9 @@ export function cn(...inputs) {
   return twMerge(clsx(inputs));
 }
 
+// Format the difference between two dates using
+// Y (years), M (months), D (days), H (hours) and m (minutes).
+// Minutes use a lowercase letter to avoid confusion with months.
 export function formatDuration(startDate, endDate) {
   const ms = endDate - startDate;
   if (Number.isNaN(ms) || ms <= 0) return "";
@@ -25,7 +28,7 @@ export function formatDuration(startDate, endDate) {
   if (months || years) parts.push(`${months}M`);
   if (days || months || years) parts.push(`${days}D`);
   if (hours || days || months || years) parts.push(`${hours}H`);
-  parts.push(`${minutes}M`);
+  parts.push(`${minutes}m`);
 
   return parts.join(" ");
 }
