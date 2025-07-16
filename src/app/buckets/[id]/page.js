@@ -28,6 +28,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import AddTradeForm from "@/components/trades/AddTradeForm";
 import SellTradeForm from "@/components/trades/SellTradeForm";
 import { useBucketStore } from "@/store/useBucketStore";
+import { formatDuration } from "@/lib/utils";
 
 export default function BucketDetailsPage() {
   const { id } = useParams();
@@ -76,8 +77,26 @@ export default function BucketDetailsPage() {
       setTestData(data);
       setBucketName(data.name);
       setBucketSize(data.bucket_size || 0);
-      setTrades(data.trades || []);
-      setTransactions(data.transactions || []);
+      const txs = data.transactions || [];
+      const tradesWithHold = (data.trades || []).map((t) => {
+        if (t.status === "CLOSED") {
+          const sellTxs = txs.filter(
+            (tx) =>
+              tx.description === `${t.symbol} - SELL` &&
+              new Date(tx.created_at) >= new Date(t.created_at)
+          );
+          if (sellTxs.length > 0) {
+            const last = sellTxs[sellTxs.length - 1];
+            t.holdDuration = formatDuration(
+              new Date(t.created_at),
+              new Date(last.created_at)
+            );
+          }
+        }
+        return t;
+      });
+      setTrades(tradesWithHold);
+      setTransactions(txs);
 
       let computedCash = data.bucket_size || 0;
       let computedPos = 0;
@@ -111,6 +130,7 @@ export default function BucketDetailsPage() {
 
   useEffect(() => {
     fetchBucket();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const handleCreate = () => {
@@ -400,7 +420,7 @@ export default function BucketDetailsPage() {
                       <TableCell>
                         {Number(t.exit_price).toFixed(2) ?? ""}
                       </TableCell>
-                      <TableCell>{t.holdDuration || "2 Days"}</TableCell>
+                      <TableCell>{t.holdDuration || ""}</TableCell>
                       <TableCell
                         className={
                           t.return_amount >= 0
