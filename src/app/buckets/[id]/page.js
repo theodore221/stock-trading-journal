@@ -82,7 +82,8 @@ export default function BucketDetailsPage() {
         if (t.status === "CLOSED") {
           const sellTxs = txs.filter(
             (tx) =>
-              tx.trade_id === t.id && tx.description === `${t.symbol} - SELL`
+              tx.description === `${t.symbol} - SELL` &&
+              new Date(tx.created_at) >= new Date(t.created_at)
           );
           if (sellTxs.length > 0) {
             const last = sellTxs[sellTxs.length - 1];

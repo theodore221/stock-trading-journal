@@ -42,7 +42,6 @@ export async function POST(request, { params }) {
         description: `${trade.symbol} - SELL`,
         qty: sellQty,
         price,
-        trade_id: trade_id,
       },
     ]);
 

@@ -96,7 +96,6 @@ export async function POST(request, { params }) {
       description: `${symbol} - BUY`,
       qty: quantity,
       price,
-      trade_id: trade.id,
     },
   ]);
 

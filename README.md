@@ -142,9 +142,8 @@ Bucket endpoints combine authentication with Supabase queries to fetch bucket de
 
 ### Tracking Trade Executions
 
-Each buy or sell action records a row in `bucket_transactions` with a
-`trade_id` referencing the related trade. Sells accumulate on the trade via
-two fields:
+Each buy or sell action records a row in `bucket_transactions`. Sells accumulate
+on the trade via two fields:
 
 - `exit_sum` – the total value received from selling shares
 - `sold_qty` – how many shares have been sold so far
