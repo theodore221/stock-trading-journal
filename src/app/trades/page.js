@@ -99,7 +99,6 @@ export default function TradesPage() {
         <TableHeader>
           <TableRow>
             <TableHead>Date</TableHead>
-            <TableHead>Bucket</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Symbol</TableHead>
             <TableHead>Qty</TableHead>
@@ -107,6 +106,7 @@ export default function TradesPage() {
             <TableHead>Exit ($)</TableHead>
             <TableHead>Return ($)</TableHead>
             <TableHead>Return %</TableHead>
+            <TableHead>Bucket</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -117,10 +117,7 @@ export default function TradesPage() {
                   ? new Date(t.created_at).toLocaleDateString("en-GB")
                   : "-"}
               </TableCell>
-              <TableCell>
-                {t.buckets?.name ||
-                  buckets.find((b) => b.id === t.bucket_id)?.name || ""}
-              </TableCell>
+
               <TableCell>
                 <span
                   className={`px-3 py-1 rounded-full text-[11px] ${
@@ -149,6 +146,11 @@ export default function TradesPage() {
                 {t.return_percent !== null && t.return_percent !== undefined
                   ? `${Number(t.return_percent).toFixed(2)}%`
                   : ""}
+              </TableCell>
+              <TableCell>
+                {t.buckets?.name ||
+                  buckets.find((b) => b.id === t.bucket_id)?.name ||
+                  ""}
               </TableCell>
             </TableRow>
           ))}
