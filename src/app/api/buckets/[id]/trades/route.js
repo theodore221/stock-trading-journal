@@ -75,6 +75,8 @@ export async function POST(request, { params }) {
         stop_loss: parsedStopLoss,
         quantity,
         price,
+        exit_sum: 0,
+        sold_qty: 0,
         status: "OPEN",
       },
     ])

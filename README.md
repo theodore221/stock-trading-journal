@@ -142,10 +142,16 @@ Bucket endpoints combine authentication with Supabase queries to fetch bucket de
 
 ### Tracking Trade Executions
 
-Each buy or sell action now records a row in `bucket_transactions` with a
-`trade_id` referencing the related trade. This linkage allows the API to
-calculate weighted exit prices and total returns when a position is fully
-closed.
+Each buy or sell action records a row in `bucket_transactions` with a
+`trade_id` referencing the related trade. Sells accumulate on the trade via
+two fields:
+
+- `exit_sum` – the total value received from selling shares
+- `sold_qty` – how many shares have been sold so far
+
+When the last share is sold the exit price is calculated as
+`exit_sum / sold_qty` and the return amount is the difference between this sum
+and the cost of all shares.
 
 ### Forms and UI Components
 

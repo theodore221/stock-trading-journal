@@ -16,7 +16,7 @@ export async function POST(request, { params }) {
     const { trade_id, qty } = alloc;
     const { data: trade, error } = await supabaseAdmin
       .from("trades")
-      .select("quantity, price, symbol")
+      .select("quantity, price, symbol, exit_sum, sold_qty")
       .eq("id", trade_id)
       .eq("bucket_id", bucketId)
       .eq("user_id", user.id)
@@ -26,16 +26,13 @@ export async function POST(request, { params }) {
     const sellQty = Number(qty);
     if (sellQty <= 0 || sellQty > Number(trade.quantity)) continue;
     const remaining = Number(trade.quantity) - sellQty;
-    await supabaseAdmin
-      .from("trades")
-      .update({ quantity: remaining })
-      .eq("id", trade_id)
-      .eq("bucket_id", bucketId)
-      .eq("user_id", user.id);
 
     const sellValue = Number(price) * sellQty;
     const costValue = Number(trade.price) * sellQty;
     totalProfit += sellValue - costValue;
+
+    const newExitSum = Number(trade.exit_sum || 0) + sellValue;
+    const newSoldQty = Number(trade.sold_qty || 0) + sellQty;
 
     await supabaseAdmin.from("bucket_transactions").insert([
       {
@@ -49,43 +46,33 @@ export async function POST(request, { params }) {
       },
     ]);
 
+    const updates = {
+      quantity: remaining,
+      exit_sum: newExitSum,
+      sold_qty: newSoldQty,
+    };
+
     if (remaining <= 0) {
-      const { data: sells } = await supabaseAdmin
-        .from("bucket_transactions")
-        .select("qty, price")
-        .eq("bucket_id", bucketId)
-        .eq("user_id", user.id)
-        .eq("trade_id", trade_id)
-        .eq("description", `${trade.symbol} - SELL`);
-
-      const totalQty = (sells || []).reduce(
-        (sum, tx) => sum + Number(tx.qty),
-        0
-      );
-      const weightedExit = (sells || []).reduce(
-        (sum, tx) => sum + Number(tx.price) * Number(tx.qty),
-        0
-      );
-      const exitPrice = totalQty ? weightedExit / totalQty : price;
-      const returnAmount = (sells || []).reduce(
-        (sum, tx) => sum + (Number(tx.price) - trade.price) * Number(tx.qty),
-        0
-      );
+      const exitPrice = newSoldQty ? newExitSum / newSoldQty : price;
+      const returnAmount = newExitSum - trade.price * newSoldQty;
       const returnPercent =
-        totalQty > 0 ? (returnAmount / (trade.price * totalQty)) * 100 : 0;
-
-      await supabaseAdmin
-        .from("trades")
-        .update({
-          status: "CLOSED",
-          exit_price: exitPrice,
-          return_amount: returnAmount,
-          return_percent: returnPercent,
-        })
-        .eq("id", trade_id)
-        .eq("bucket_id", bucketId)
-        .eq("user_id", user.id);
+        newSoldQty > 0
+          ? (returnAmount / (trade.price * newSoldQty)) * 100
+          : 0;
+      Object.assign(updates, {
+        status: "CLOSED",
+        exit_price: exitPrice,
+        return_amount: returnAmount,
+        return_percent: returnPercent,
+      });
     }
+
+    await supabaseAdmin
+      .from("trades")
+      .update(updates)
+      .eq("id", trade_id)
+      .eq("bucket_id", bucketId)
+      .eq("user_id", user.id);
   }
 
   if (totalProfit !== 0) {
