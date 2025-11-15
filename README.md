@@ -9,6 +9,7 @@ A web application for recording and analysing trading performance. It is built w
 - Add, edit and close trades with journaling notes, tags and confidence levels.
 - Track bucket transactions (deposits/withdrawals) and profit/loss statistics.
 - Example profit chart using Recharts.
+- Offline SMA crossover backtester with optional RSI filters.
 
 ## Getting Started
 
@@ -16,6 +17,14 @@ A web application for recording and analysing trading performance. It is built w
 
    ```bash
    npm install
+   ```
+
+   Python utilities for backtesting require a separate virtual environment:
+
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate  # Windows: .venv\Scripts\activate
+   pip install -r requirements.txt
    ```
 
 2. **Configure environment variables**
@@ -42,6 +51,33 @@ A web application for recording and analysing trading performance. It is built w
    npm run build
    npm start
    ```
+
+## Running the SMA Backtester
+
+The repository includes `backtest.py`, a stand-alone script that fetches historical
+prices (via [yfinance](https://github.com/ranaroussi/yfinance)) and evaluates an
+SMA crossover strategy with optional RSI filters.
+
+### Single-parameter run
+
+```bash
+python backtest.py --symbols SMH --short-sma 50 --long-sma 200 --start 2020-01-01
+```
+
+### Sweeping multiple parameters
+
+```bash
+python backtest.py \
+  --symbols SMH SOXL \
+  --short-sma 20 50 \
+  --long-sma 100 200 \
+  --rsi-lower 30 --rsi-upper 70 \
+  --csv backtest_results.csv
+```
+
+The script prints a one-line summary for each configuration and finishes with a
+sortable table of results. Use `--csv` to export the metrics (final equity, net
+P&L, and percent return) for further analysis.
 
 ## Project Structure
 
